@@ -97,10 +97,14 @@ def get_dong(
         "전체_정원", "통합_현원", "전체_커버율", "전체_충원율",
         "인프라지수_엔트로피", "사분면", "미스매치_유형",
         "평균제곱미터당가격_만원", "합계출산율_2025", "고용률",
+        "교사아동비",
     ]
     cols = [c for c in cols if c in df.columns]
     records = df[cols].to_dict(orient="records")
     return clean_json(records)
+
+
+CORE_MATRIX_TYPES = ["양호", "물리적부족", "질적미스매치", "이중취약"]
 
 
 @app.get("/api/summary")
@@ -109,6 +113,10 @@ def get_summary():
     df = get_dong_df()
 
     type_counts = df["미스매치_유형"].value_counts().to_dict()
+    # 4분면(2x2) 매트릭스로 실제 진단 가능한 동만 센 값.
+    # "완전공백"(시설 자체가 없음)과 "판정불가"(정원 0이라 충원율 계산 불가)는
+    # 애초에 이 2x2 틀 밖에 있는 별도 사각지대라 여기 포함되지 않음.
+    core_matrix_dong = int(df["미스매치_유형"].isin(CORE_MATRIX_TYPES).sum())
 
     gu_summary = (
         df[df["시군구명"] != "군위군"]
@@ -127,6 +135,7 @@ def get_summary():
 
     return {
         "total_dong": int(len(df)),
+        "core_matrix_dong": core_matrix_dong,
         "mismatch_type_counts": type_counts,
         "district_summary": clean_json(gu_summary.to_dict(orient="records")),
     }

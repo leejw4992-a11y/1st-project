@@ -15,6 +15,9 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FINAL_CSV = os.path.join(BASE_DIR, "data", "daegu_final_dataset.csv")
 CENTROID_CSV = os.path.join(BASE_DIR, "data", "dong_centroids.csv")
+# 교사 1인당 아동수(교사아동비) 산출용 별도 데이터셋 — 메인 데이터셋과 용도가 달라
+# 따로 관리되지만, 읍면동 기준으로 병합해서 함께 쓴다.
+TEACHER_CSV = os.path.join(BASE_DIR, "data", "daegu_final_dataset_m1.csv")
 
 INDEX_INDICATORS = ["전체_커버율", "체육밀도"]
 
@@ -28,6 +31,10 @@ def load_base_df() -> pd.DataFrame:
         lambda r: (r["체육시설수"] / r["유아인구_3_6세"] * 1000) if r["유아인구_3_6세"] > 0 else 0,
         axis=1,
     )
+    # 교사아동비는 메인 데이터셋에 없고 별도 파일(m1)에만 있어, 읍면동 기준 병합해서 채워 넣는다.
+    if "교사아동비" not in df.columns and os.path.exists(TEACHER_CSV):
+        teacher = pd.read_csv(TEACHER_CSV)[["시군구명", "읍면동명", "교사아동비"]]
+        df = df.merge(teacher, on=["시군구명", "읍면동명"], how="left")
     return df
 
 
