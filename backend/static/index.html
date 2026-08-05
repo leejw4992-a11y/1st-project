@@ -285,6 +285,58 @@
         color: var(--sub);
         white-space: nowrap;
       }
+      #drillDonut {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 6px 0 12px;
+        border-bottom: 1px solid var(--rule);
+        margin-bottom: 4px;
+      }
+      #drillDonut svg {
+        flex: none;
+      }
+      .donut-legend {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .donut-legend .dl-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11.5px;
+        color: var(--ink-2);
+      }
+      .donut-legend .dl-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex: none;
+      }
+      .donut-legend .dl-name {
+        flex: 1;
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .donut-legend .dl-cnt {
+        font-family: var(--mono);
+        color: var(--sub);
+        flex: none;
+      }
+      .donut-center-label {
+        font-size: 20px;
+        font-weight: 800;
+        fill: var(--ink);
+      }
+      .donut-center-sub {
+        font-size: 10px;
+        fill: var(--faint);
+      }
 
       /* ── 지도 ── */
       .maphead {
@@ -360,33 +412,149 @@
       }
       .panel-stats {
         right: 20px;
+        width: 300px;
+        max-width: 300px;
+        max-height: calc(100% - 98px);
+        display: flex;
+        flex-direction: column;
+        overflow: auto;
       }
       .panel-stats .stats {
         margin: 0;
+        flex: none;
+        gap: 8px;
       }
       .panel-stats .stats > * {
         box-shadow: 0 6px 18px rgba(22, 32, 42, 0.1);
+        flex: 1 1 0;
+        min-width: 0;
+        width: 0;
+        padding: 8px 8px;
       }
-      svg.gumap {
+      .panel-stats .lb {
+        font-size: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: clip;
+      }
+      .panel-stats .vl {
+        font-size: 18px;
+        white-space: nowrap;
+      }
+      .chart-sec {
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--rule);
+        flex: none;
+      }
+      .chart-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 10px;
+      }
+      #guChart {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .bar-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 18px;
+        border: 1px solid var(--rule);
+        border-radius: 10px;
+        padding: 15px 16px;
+      }
+      .bar-row .bar-label {
+        width: 62px;
+        flex: none;
+        color: var(--ink);
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .bar-row .bar-track {
+        flex: 1;
+        height: 14px;
+        background: var(--paper);
+        border-radius: 5px;
+        overflow: hidden;
+      }
+      .bar-row .bar-fill {
+        height: 100%;
+        border-radius: 5px;
+        background: #2f6fed;
+      }
+      .bar-row .bar-val {
+        width: 62px;
+        flex: none;
+        text-align: right;
+        font-family: var(--mono);
+        color: var(--ink-2);
+        font-weight: 700;
+        font-size: 17px;
+      }
+      /* ── 지도: 항상 viewCore 고정, 구 클릭 시 transform으로 확대(focus+context) ── */
+      .stage {
+        position: relative;
+      }
+      .stage > svg {
+        position: absolute;
+        inset: 0;
         width: 100%;
         height: 100%;
       }
       .gu path {
         stroke: #fff;
-        stroke-width: 3;
+        stroke-width: 1.8;
         cursor: pointer;
-        transition: 0.16s;
+        transition:
+          opacity 0.5s ease,
+          filter 0.5s ease,
+          stroke-width 0.16s;
+        vector-effect: non-scaling-stroke;
       }
       .gu:hover path {
         stroke: var(--ink);
-        stroke-width: 4;
       }
       .gu.on path {
         stroke: var(--ink);
-        stroke-width: 4.5;
+        stroke-width: 2.4;
       }
+      /* 확대된 상태에서는 선택된 구 테두리를 강조하지 않는다 —
+         화면 가득 확대된 도형에 굵은 검은 테두리가 그대로 남아 지저분해 보이므로,
+         옆 구와 같은 흰색 경계선으로 되돌린다. */
+      body.zoomed .gu.on path,
+      body.zoomed .gu.sel path {
+        stroke: #fff;
+        stroke-width: 1.8;
+      }
+      /* 확대 시 주변 구: 회색·반투명으로 맥락만 남긴다 */
+      .gu.dim path {
+        opacity: 0.22;
+        filter: grayscale(0.7) brightness(1.04);
+      }
+      .gu.dim:hover path {
+        stroke: #fff;
+      }
+      .gu.sel path {
+        pointer-events: none;
+      }
+      /* 배경 처리 옵션: 회색 면 대신 윤곽선만 (필요 시 body.outline으로 전환) */
+      body.outline .gu.dim path {
+        opacity: 1;
+        filter: none;
+        fill: transparent;
+        stroke: #d3d9dd;
+        stroke-width: 1.2;
+      }
+
       .lbl {
         cursor: pointer;
+        transition: opacity 0.35s;
       }
       .lbl text {
         pointer-events: none;
@@ -405,118 +573,53 @@
         font-family: var(--mono);
         opacity: 0.65;
       }
+      body.zoomed .lbl {
+        opacity: 0;
+        pointer-events: none;
+      }
 
-      /* 동 팝업 */
-      .pop {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        width: min(760px, calc(100% - 40px));
-        max-height: calc(100% - 70px);
-        background: var(--card);
-        border: 1px solid var(--rule);
-        border-radius: 13px;
-        box-shadow: 0 14px 40px rgba(22, 32, 42, 0.22);
+      /* ── 군위군 인셋 (본지도 비율과 무관하게 별도 축척으로 우측 상단에 표시) ── */
+      .insetUI {
+        transition: opacity 0.4s;
+      }
+      .insetUI .frame {
+        fill: #fff;
+        stroke: #c7cdd2;
+        stroke-width: 1.2;
+        stroke-dasharray: 5 4;
+        vector-effect: non-scaling-stroke;
+      }
+      .insetUI .cap {
+        font-size: 10.5px;
+        fill: var(--sub);
+        font-weight: 600;
+      }
+      body.zoomed .insetUI {
+        opacity: 0.2;
+      }
+      body.gwzoom .insetUI {
+        opacity: 0;
+      }
+      body.noinset .insetUI,
+      body.noinset .gu-gw {
         display: none;
-        flex-direction: column;
-        z-index: 20;
-      }
-      .pop[data-open] {
-        display: flex;
-      }
-      .pophead {
-        padding: 13px 16px;
-        border-bottom: 1px solid var(--rule);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .pophead h3 {
-        margin: 0;
-        font-size: 16px;
-      }
-      .pophead .cnt {
-        font-size: 11.5px;
-        color: var(--faint);
-        margin-top: 2px;
-      }
-      .popbody {
-        padding: 13px 16px 16px;
-        overflow: auto;
-      }
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
-        gap: 8px;
-      }
-      .dt {
-        border: 0;
-        border-radius: 9px;
-        padding: 10px 10px 9px;
-        text-align: left;
-        cursor: pointer;
-        font: inherit;
-        color: #fff;
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-        transition: 0.14s;
-        min-height: 70px;
-      }
-      .dt:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(22, 32, 42, 0.18);
-      }
-      .dt[aria-pressed="true"] {
-        outline: 3px solid var(--ink);
-        outline-offset: 2px;
-      }
-      .dt .dn {
-        font-size: 13px;
-        font-weight: 700;
-        letter-spacing: -0.3px;
-      }
-      .dt .dl {
-        font-size: 10.5px;
-        opacity: 0.9;
-      }
-      .dt .dp {
-        font-size: 10.5px;
-        font-family: var(--mono);
-        opacity: 0.86;
-        margin-top: auto;
-      }
-      .dt.pale {
-        color: var(--ink);
-      }
-      .dt.pale .dl,
-      .dt.pale .dp {
-        opacity: 0.72;
       }
 
-      .gu-shape-wrap {
-        width: 100%;
-        height: 62vh;
-        max-height: 460px;
-        min-height: 300px;
-      }
-      .gu-shape-map {
-        width: 100%;
-        height: 100%;
-      }
-      .gu-shape-map .dong-piece {
+      /* ── 동 레이어 (확대 후 나타남) ── */
+      .dongLayer path {
         stroke: #fff;
+        stroke-width: 1.1;
         cursor: pointer;
         transition: filter 0.12s;
+        vector-effect: non-scaling-stroke;
       }
-      .gu-shape-map .dong-piece:hover {
+      .dongLayer path:hover {
         filter: brightness(0.92);
       }
-      .gu-shape-map .dong-piece.sel {
-        filter: brightness(0.82);
+      .dongLayer path.sel {
+        filter: brightness(0.8);
       }
-      .gu-shape-map .dong-label {
+      .dong-label {
         pointer-events: none;
         text-anchor: middle;
         dominant-baseline: middle;
@@ -527,23 +630,240 @@
         stroke-linejoin: round;
       }
 
-      .veil {
+      /* ── 뒤로가기 버튼 ── */
+      .backbtn {
         position: absolute;
-        inset: 0;
-        background: rgba(22, 32, 42, 0.12);
+        top: 14px;
+        left: 14px;
+        z-index: 6;
         display: none;
-        z-index: 10;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid var(--rule);
+        background: var(--card);
+        border-radius: 9px;
+        padding: 8px 13px;
+        font: inherit;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--ink-2);
+        cursor: pointer;
+        box-shadow: 0 6px 18px rgba(22, 32, 42, 0.12);
       }
-      .veil[data-open] {
-        display: block;
+      .backbtn:hover {
+        border-color: var(--ink);
+      }
+      body.zoomed .backbtn {
+        display: inline-flex;
       }
 
-      /* ── 상세 ── */
+      /* ── 우측(또는 하단) 대시보드 패널: 구 확대 시 화면 반절을 채운다 ── */
+      .gupanel {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 50%;
+        z-index: 5;
+        background: var(--paper);
+        border-left: 1px solid var(--rule);
+        box-shadow: -14px 0 30px rgba(22, 32, 42, 0.1);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 16px 18px;
+        overflow: auto;
+        transform: translateX(103%);
+        transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) 0.12s;
+      }
+      body.zoomed.haspanel .gupanel {
+        transform: none;
+      }
+      .gp-head {
+        flex: none;
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .gp-head h3 {
+        margin: 0;
+        font-size: 19px;
+      }
+      .gp-head .cap {
+        font-size: 11.5px;
+        color: var(--faint);
+      }
+      .gp-grid {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1.3fr 1fr;
+        gap: 12px;
+      }
+      .gp-card.wide {
+        grid-column: 1 / -1;
+      }
+      .gp-card {
+        background: var(--card);
+        border: 1px solid var(--rule);
+        border-radius: 11px;
+        padding: 14px 16px;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .gp-card .cap {
+        font-size: 13px;
+        color: var(--faint);
+        margin-bottom: 8px;
+      }
+      .gp-lg {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px 12px;
+        font-size: 11.5px;
+        color: var(--ink-2);
+      }
+      .gp-lg .dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 4px;
+      }
+      /* 동별 세로 막대그래프 */
+      .vchart {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        align-items: flex-end;
+        gap: 5px;
+        padding: 8px 2px 52px;
+      }
+      .vbar {
+        flex: 1;
+        min-width: 0;
+        height: 100%;
+        display: flex;
+        align-items: flex-end;
+        position: relative;
+        cursor: pointer;
+      }
+      .vbar i {
+        display: block;
+        width: 100%;
+        border-radius: 4px 4px 0 0;
+        min-height: 3px;
+      }
+      .vbar:hover i,
+      .vbar.sel i {
+        filter: brightness(0.88);
+      }
+      .vbar.sel i {
+        outline: 2px solid var(--ink);
+        outline-offset: -2px;
+      }
+      .vbar .lb {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 50%;
+        transform: translateX(-50%);
+        writing-mode: vertical-rl;
+        font-size: 9px;
+        color: var(--sub);
+        max-height: 48px;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+      /* 하단 카드: 교사비 반원 게이지 · 충원율 도넛 */
+      .gp-dial {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .gp-dial svg {
+        width: 100%;
+        height: 100%;
+        max-height: 210px;
+      }
+      .gp-donutwrap {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .gp-dstats {
+        flex: 1;
+        min-width: 0;
+        font-size: 15px;
+        color: var(--ink-2);
+      }
+      .gp-dstats > div {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 4px 0;
+      }
+      .gp-dstats b {
+        font-weight: 800;
+      }
+      .gp-delta {
+        margin-top: 6px;
+        font-size: 14px;
+        font-weight: 800;
+      }
+      .gp-delta.pos {
+        color: #1d8a4e;
+      }
+      .gp-delta.neg {
+        color: #c42b2b;
+      }
+
+      body.zoomed .panel-matrix,
+      body.zoomed .panel-stats {
+        display: none;
+      }
+
+      /* 좁은 화면: 좌우 반반 대신 위(지도)/아래(대시보드) 상하 분할 */
+      @media (max-width: 1100px) {
+        .gupanel {
+          top: auto;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          width: auto;
+          height: 55%;
+          border-left: none;
+          border-top: 1px solid var(--rule);
+          box-shadow: 0 -14px 30px rgba(22, 32, 42, 0.1);
+          transform: translateY(103%);
+        }
+        body.zoomed.haspanel .gupanel {
+          transform: none;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .gu path,
+        .lbl,
+        .insetUI,
+        .gupanel,
+        .dongLayer path {
+          transition: none !important;
+        }
+      }
+
       .detail {
         position: absolute;
         top: 160px;
         right: 20px;
-        z-index: 16;
+        z-index: 21;
         width: 300px;
         max-height: calc(100% - 180px);
         background: var(--card);
@@ -576,6 +896,36 @@
         font-size: 11px;
         font-weight: 700;
         margin: 7px 0 12px;
+      }
+      .stat-highlight {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .stat-box {
+        flex: 1;
+        min-width: 0;
+        border: 1px solid var(--rule);
+        border-radius: 10px;
+        padding: 10px 12px;
+        background: var(--paper);
+      }
+      .stat-label {
+        font-size: 11px;
+        color: var(--sub);
+        margin-bottom: 4px;
+      }
+      .stat-num {
+        font-size: 24px;
+        font-weight: 800;
+        font-family: var(--mono);
+        letter-spacing: -0.5px;
+        color: var(--ink);
+      }
+      .stat-num small {
+        font-size: 13px;
+        font-weight: 600;
+        margin-left: 1px;
       }
       .rows {
         border-top: 1px solid var(--rule);
@@ -669,7 +1019,10 @@
         </div>
       </div>
 
-      <div class="stage" id="stage">불러오는 중…</div>
+      <div class="stage" id="stage">
+        <button class="backbtn" id="backBtn">← 대구 전체</button>
+        <div class="gupanel" id="gupanel"></div>
+      </div>
 
       <!-- 좌측 상단 오버레이: 4분면 매트릭스 -->
       <div class="panel panel-matrix">
@@ -714,14 +1067,26 @@
           >
           <span><i style="background: #cbd0ce"></i>판정 보류</span>
         </div>
+
+        <div class="drill" id="drill" hidden>
+          <div class="top">
+            <h3 id="drillTitle">시설이 한 곳도 없는 지역</h3>
+            <button class="closebtn" id="drillClose">닫기</button>
+          </div>
+          <p class="cap" id="drillCap">
+            숫자만으로는 모두 같은 “공백”이지만, 배경은 서로 다릅니다.
+          </p>
+          <div id="drillDonut"></div>
+          <div id="blankList"></div>
+        </div>
       </div>
 
       <!-- 우측 상단 오버레이: 통계 -->
       <div class="panel panel-stats">
         <div class="stats">
           <div>
-            <div class="lb">분석 대상 동</div>
-            <div class="vl" id="kpi-total">–</div>
+            <div class="lb">교사 1인당 아동수</div>
+            <div class="vl" id="kpi-teacher">–</div>
           </div>
           <button id="blankBtn" aria-expanded="false">
             <div class="lb">시설 없음</div>
@@ -733,32 +1098,14 @@
           </div>
         </div>
 
-        <div class="drill" id="drill" hidden>
-          <div class="top">
-            <h3>시설이 한 곳도 없는 지역</h3>
-            <button class="closebtn" id="drillClose">닫기</button>
-          </div>
-          <p class="cap">
-            숫자만으로는 모두 같은 “공백”이지만, 배경은 서로 다릅니다.
-          </p>
-          <div id="blankList"></div>
+        <div class="chart-sec" id="chartSec">
+          <div class="chart-title">구·군별 평균 충원율</div>
+          <div id="guChart"></div>
         </div>
       </div>
 
       <!-- 동 상세 (선택 시 우측에 표시) -->
       <div class="detail" id="detail"></div>
-
-      <div class="veil" id="veil"></div>
-      <div class="pop" id="pop">
-        <div class="pophead">
-          <div>
-            <h3 id="popTitle">—</h3>
-            <div class="cnt" id="popCnt"></div>
-          </div>
-          <button class="closebtn" id="popClose">닫기 ✕</button>
-        </div>
-        <div class="popbody"><div id="popGrid"></div></div>
-      </div>
     </div>
 
     <div class="demo" id="demo">시안 미리보기 — 샘플 데이터로 표시 중</div>
@@ -1461,6 +1808,107 @@
       let allDong = [];
       let curGu = null;
       let curDong = null;
+      let zoomGu = null; // 현재 확대된 구·군 (focus+context)
+      let daeguAvg = { fill: 68.6, teacher: 5.3 }; // load() 이후 실데이터로 갱신됨
+
+      /* ── 변환(transform) 유틸: 확대는 viewBox가 아니라 <g> transform으로 처리 ── */
+      const ID = { tx: 0, ty: 0, s: 1 };
+      function applyT(el, t) {
+        el.setAttribute(
+          "transform",
+          "translate(" + t.tx + " " + t.ty + ") scale(" + t.s + ")",
+        );
+        el._t = t;
+      }
+      function animateT(el, to, dur) {
+        const from = el._t || ID,
+          t0 = performance.now();
+        cancelAnimationFrame(el._raf);
+        const reduced = window.matchMedia(
+          "(prefers-reduced-motion: reduce)",
+        ).matches;
+        if (reduced) {
+          applyT(el, to);
+          return;
+        }
+        const step = (now) => {
+          const p = Math.min(1, (now - t0) / dur),
+            e = 1 - Math.pow(1 - p, 3);
+          applyT(el, {
+            tx: from.tx + (to.tx - from.tx) * e,
+            ty: from.ty + (to.ty - from.ty) * e,
+            s: from.s + (to.s - from.s) * e,
+          });
+          if (p < 1) el._raf = requestAnimationFrame(step);
+        };
+        el._raf = requestAnimationFrame(step);
+      }
+      function bboxOf(d) {
+        let minX = Infinity,
+          maxX = -Infinity,
+          minY = Infinity,
+          maxY = -Infinity;
+        (d.match(/-?\d+(?:\.\d+)?,-?\d+(?:\.\d+)?/g) || []).forEach((p) => {
+          const [x, y] = p.split(",").map(Number);
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        });
+        return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+      }
+      function viewCoreRect() {
+        const [x, y, w, h] = GEO.viewCore.split(" ").map(Number);
+        return { x, y, w, h };
+      }
+      /* bbox를 지정 영역 중앙에 맞추는 transform. p' = s*p + t */
+      function fitT(bb, pad, rect) {
+        const R = rect || viewCoreRect();
+        const s = Math.min(
+          R.w / (bb.w * (1 + pad * 2)),
+          R.h / (bb.h * (1 + pad * 2)),
+        );
+        return {
+          s,
+          tx: R.x + R.w / 2 - s * (bb.x + bb.w / 2),
+          ty: R.y + R.h / 2 - s * (bb.y + bb.h / 2),
+        };
+      }
+      /* 확대 시 지도가 차지할 영역 = 화면 왼쪽 절반(또는 좁은 화면에서는 위쪽 절반).
+         viewBox가 화면에 letterbox될 수 있으므로, 실제 렌더 크기를 역산해서
+         '실제 보이는 절반'을 계산한다. */
+      function halfRect() {
+        const svg = document.querySelector(".stage > svg.gumap");
+        const V = viewCoreRect();
+        if (!svg) return V;
+        const r = svg.getBoundingClientRect();
+        const narrow = window.matchMedia("(max-width: 1100px)").matches;
+        const k = Math.min(r.width / V.w, r.height / V.h);
+        const ox = (r.width - k * V.w) / 2,
+          oy = (r.height - k * V.h) / 2;
+        if (narrow) {
+          return {
+            x: V.x - ox / k,
+            y: V.y - oy / k,
+            w: r.width / k,
+            h: (r.height * 0.45) / k,
+          };
+        }
+        return {
+          x: V.x - ox / k,
+          y: V.y - oy / k,
+          w: (r.width * 0.5) / k,
+          h: r.height / k,
+        };
+      }
+      function cssScale() {
+        const svg = document.querySelector(".stage > svg.gumap");
+        if (!svg) return 1;
+        const r = svg.getBoundingClientRect();
+        const V = viewCoreRect();
+        return Math.min(r.width / V.w, r.height / V.h);
+      }
+      const DUR = 650;
 
       /* ── 필터 ── */
       function visible() {
@@ -1509,53 +1957,42 @@
       }
 
       /* ── 지도 ── */
-      function renderMap() {
-        const rows = visible(),
-          gw = $("gunwi").checked;
-        const byGu = {};
-        rows.forEach((r) => {
-          (byGu[r["시군구명"]] ||= []).push(r);
-        });
+      /* ── 지도: DOM은 한 번만 만들고(buildStageDom), 이후엔 색만 갱신(refreshColors) ──
+         (그래야 구를 확대한 상태에서 필터가 바뀌어도 transform이 안 날아간다) */
+      let worldEl = null,
+        gwEl = null,
+        insetUI = null,
+        insetT = null,
+        svgEl = null;
+      const CORE_GU = Object.keys(GEO.gu).filter((g) => g !== "군위군");
 
-        // 색 농도 계산용 분모: type 필터와 무관하게, 군위군 체크박스만 반영한 "그 구의 전체 동"
-        const allRows = allDong.filter((r) => gw || r["시군구명"] !== "군위군");
-        const byGuAll = {};
-        allRows.forEach((r) => {
-          (byGuAll[r["시군구명"]] ||= []).push(r);
-        });
+      function buildStageDom() {
+        if (svgEl) return;
+        svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svgEl.setAttribute("class", "gumap");
+        svgEl.setAttribute("viewBox", GEO.viewCore);
+        svgEl.setAttribute("role", "img");
+        svgEl.setAttribute("aria-label", "대구 구·군 지도");
+        $("stage").insertBefore(svgEl, $("stage").firstChild);
 
-        const vb = gw ? GEO.viewAll : GEO.viewCore;
-        let s =
-          '<svg class="gumap" viewBox="' +
-          vb +
-          '" role="img" aria-label="대구 구·군 지도">';
-
-        Object.entries(GEO.gu).forEach(([gu, sh]) => {
-          if (gu === "군위군" && !gw) return;
-          const fill = guShade(byGu[gu] || [], byGuAll[gu] || []);
+        worldEl = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        worldEl.id = "world";
+        let s = "";
+        CORE_GU.forEach((gu) => {
+          const sh = GEO.gu[gu];
           s +=
-            '<g class="gu' +
-            (gu === curGu ? " on" : "") +
-            '" data-gu="' +
+            '<g class="gu" data-gu="' +
             gu +
-            '">' +
-            '<path d="' +
+            '"><path d="' +
             sh.d +
-            '" fill="' +
-            fill +
             '" fill-rule="evenodd"></path></g>';
         });
-
-        // 라벨은 도형 위에 따로 그린다 (다른 구에 가려지지 않도록)
-        Object.entries(GEO.gu).forEach(([gu, sh]) => {
-          if (gu === "군위군" && !gw) return;
-          const n = (byGu[gu] || []).length;
-          const [x, y] = sh.label;
+        CORE_GU.forEach((gu) => {
+          const [x, y] = GEO.gu[gu].label;
           s +=
             '<g class="lbl" data-gu="' +
             gu +
-            '">' +
-            '<rect x="' +
+            '"><rect x="' +
             (x - 42) +
             '" y="' +
             (y - 24) +
@@ -1566,157 +2003,595 @@
             (y - 2) +
             '">' +
             gu +
-            "</text>" +
-            '<text class="gnum" x="' +
+            '</text><text class="gnum" x="' +
             x +
             '" y="' +
             (y + 16) +
-            '">' +
-            n +
-            "곳</text></g>";
+            '"></text></g>';
         });
-        s += "</svg>";
+        worldEl.innerHTML = s;
+        svgEl.appendChild(worldEl);
+        applyT(worldEl, ID);
 
-        $("stage").innerHTML = s;
-        $("stage")
-          .querySelectorAll("[data-gu]")
-          .forEach((g) =>
-            g.addEventListener("click", () => openGu(g.dataset.gu)),
+        // 군위군 인셋: 본지도 viewCore 우측 상단 점선 박스에 별도 축척으로 얹는다
+        const V = viewCoreRect();
+        const gwBB = bboxOf(GEO.gu.군위군.d);
+        const BOX = { x: V.x + V.w - 182, y: V.y + 16, w: 168, h: 164 };
+        insetT = (() => {
+          const pad = 0.09;
+          const sc = Math.min(
+            BOX.w / (gwBB.w * (1 + pad * 2)),
+            BOX.h / (gwBB.h * (1 + pad * 2)),
           );
+          return {
+            s: sc,
+            tx: BOX.x + BOX.w / 2 - sc * (gwBB.x + gwBB.w / 2),
+            ty: BOX.y + BOX.h / 2 - sc * (gwBB.y + gwBB.h / 2) + 8,
+          };
+        })();
+        insetUI = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        insetUI.setAttribute("class", "insetUI");
+        insetUI.innerHTML =
+          '<rect class="frame" x="' +
+          BOX.x +
+          '" y="' +
+          BOX.y +
+          '" width="' +
+          BOX.w +
+          '" height="' +
+          BOX.h +
+          '" rx="10"></rect><text class="cap" x="' +
+          (BOX.x + 10) +
+          '" y="' +
+          (BOX.y + 17) +
+          '">군위군 · 별도 축척</text>';
+        svgEl.appendChild(insetUI);
+        gwEl = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        gwEl.innerHTML =
+          '<g class="gu gu-gw" data-gu="군위군"><path d="' +
+          GEO.gu.군위군.d +
+          '" fill-rule="evenodd"></path></g>';
+        svgEl.appendChild(gwEl);
+        applyT(gwEl, insetT);
 
-        const type = $("typeFilter").value;
-        $("mapSub").textContent = type
-          ? "색이 진할수록 \u2018" + LABEL[type] + "\u2019 동이 많습니다"
-          : "색이 진할수록 손봐야 할 동이 많습니다 · 구·군을 누르면 동이 나옵니다";
+        svgEl.querySelectorAll("[data-gu]").forEach((g) =>
+          g.addEventListener("click", (e) => {
+            e.stopPropagation();
+            zoomTo(g.dataset.gu);
+          }),
+        );
+        svgEl.addEventListener("click", (e) => {
+          if (zoomGu && e.target === svgEl) back();
+        });
+
+        applyInsetVisibility();
+      }
+      function applyInsetVisibility() {
+        const show = $("gunwi").checked;
+        if (insetUI) insetUI.style.display = show ? "" : "none";
+        if (gwEl) gwEl.style.display = show ? "" : "none";
       }
 
-      /* ── 동 팝업 ── */
-      /* ── 동 팝업: 실제 읍면동 경계(폴리곤) 그대로 표시 ──
-         daegu_map.json(SGIS 읍면동 경계, 투영좌표계) 폴리곤을 단순화(허용오차 40m)해
-         DONG_SHAPES에 미리 계산해 두었다. y좌표만 부호를 반전(-y)해서 SVG 좌표계
-         (아래로 증가)에 맞췄을 뿐, 별도의 스케일/회전 보정 없이 원본 좌표를 그대로
-         쓴다 — 그래서 왜곡 없이 실제 형태·비율 그대로 나온다. */
+      function renderMap() {
+        buildStageDom();
+        refreshColors();
+      }
 
-      function openGu(gu) {
-        curGu = gu;
-        const rows = visible().filter((r) => r["시군구명"] === gu);
-        rows.sort(
-          (a, b) => (b["영유아인구_0_6세"] || 0) - (a["영유아인구_0_6세"] || 0),
+      function refreshColors() {
+        const rows = visible(),
+          gw = $("gunwi").checked;
+        const byGu = {};
+        rows.forEach((r) => {
+          (byGu[r["시군구명"]] ||= []).push(r);
+        });
+        const allRows = allDong.filter((r) => gw || r["시군구명"] !== "군위군");
+        const byGuAll = {};
+        allRows.forEach((r) => {
+          (byGuAll[r["시군구명"]] ||= []).push(r);
+        });
+
+        Object.keys(GEO.gu).forEach((gu) => {
+          const fill = guShade(byGu[gu] || [], byGuAll[gu] || []);
+          const path = svgEl.querySelector(
+            '.gu[data-gu="' + CSS.escape(gu) + '"] path',
+          );
+          if (path) path.setAttribute("fill", fill);
+          const g = svgEl.querySelector(
+            '.gu[data-gu="' + CSS.escape(gu) + '"]',
+          );
+          if (g) g.classList.toggle("on", gu === curGu);
+          const numEl = svgEl.querySelector(
+            '.lbl[data-gu="' + CSS.escape(gu) + '"] .gnum',
+          );
+          if (numEl) numEl.textContent = (byGu[gu] || []).length + "곳";
+        });
+        applyInsetVisibility();
+
+        const type = $("typeFilter").value;
+        $("mapSub").textContent = zoomGu
+          ? zoomGu + " 확대 중 — 흐려진 옆 구를 누르면 바로 이동합니다"
+          : type
+            ? "색이 진할수록 \u2018" + LABEL[type] + "\u2019 동이 많습니다"
+            : "색이 진할수록 손봐야 할 동이 많습니다 · 구·군을 누르면 동이 나옵니다";
+
+        renderGuChart();
+      }
+
+      /* ── 구·군별 평균 충원율 막대그래프 ── */
+      function renderGuChart() {
+        const gw = $("gunwi").checked;
+        const rows = allDong.filter(
+          (r) => (gw || r["시군구명"] !== "군위군") && r["전체_충원율"] != null,
         );
+        const byGu = {};
+        rows.forEach((r) => {
+          (byGu[r["시군구명"]] ||= []).push(r["전체_충원율"]);
+        });
+        const data = Object.entries(byGu)
+          .map(([gu, arr]) => ({
+            gu,
+            avg: arr.reduce((a, b) => a + b, 0) / arr.length,
+          }))
+          .sort((a, b) => b.avg - a.avg);
+        const maxV = Math.max(0.01, ...data.map((d) => d.avg));
 
-        $("popTitle").textContent = gu;
-        $("popCnt").textContent = rows.length + "개 동 · 실제 경계";
+        $("guChart").innerHTML = data
+          .map((d) => {
+            const w = Math.max(2, (d.avg / maxV) * 100);
+            return (
+              '<div class="bar-row">' +
+              '<div class="bar-label">' +
+              d.gu +
+              "</div>" +
+              '<div class="bar-track"><div class="bar-fill" style="width:' +
+              w.toFixed(1) +
+              '%"></div></div>' +
+              '<div class="bar-val">' +
+              pct(d.avg) +
+              "</div>" +
+              "</div>"
+            );
+          })
+          .join("");
+      }
 
+      /* ── 우측(확대 시) 대시보드 패널: 실데이터 기반 ── */
+      function polar(cx, cy, r, deg) {
+        const a = (deg * Math.PI) / 180;
+        return [cx + r * Math.cos(a), cy - r * Math.sin(a)];
+      }
+      function arcPath(cx, cy, r, a1, a2) {
+        const [x1, y1] = polar(cx, cy, r, a1),
+          [x2, y2] = polar(cx, cy, r, a2);
+        return (
+          "M" +
+          x1.toFixed(1) +
+          "," +
+          y1.toFixed(1) +
+          " A" +
+          r +
+          "," +
+          r +
+          " 0 0 1 " +
+          x2.toFixed(1) +
+          "," +
+          y2.toFixed(1)
+        );
+      }
+      /* 교사 1인당 아동수: 양호/주의/위험 구간 반원 게이지 + 대구 평균 눈금 */
+      function dialSVG(val) {
+        const cx = 100,
+          cy = 96,
+          r = 70,
+          W = 15,
+          MIN = 2,
+          MAX = 7;
+        const A = (t) =>
+          180 - ((Math.min(MAX, Math.max(MIN, t)) - MIN) / (MAX - MIN)) * 180;
+        const seg = (t1, t2, c) =>
+          '<path d="' +
+          arcPath(cx, cy, r, A(t1), A(t2)) +
+          '" stroke="' +
+          c +
+          '" stroke-width="' +
+          W +
+          '" fill="none"/>';
+        const [p1x, p1y] = polar(cx, cy, r - 15, A(val)),
+          [p2x, p2y] = polar(cx, cy, r + 9, A(val));
+        const [m1x, m1y] = polar(cx, cy, r - 11, A(daeguAvg.teacher)),
+          [m2x, m2y] = polar(cx, cy, r + 7, A(daeguAvg.teacher));
+        const lab = (t, s) => {
+          const [lx, ly] = polar(cx, cy, r + 19, A(t));
+          return (
+            '<text x="' +
+            lx.toFixed(0) +
+            '" y="' +
+            (ly + 3).toFixed(0) +
+            '" text-anchor="middle" font-size="8.5" fill="#949ea6">' +
+            s +
+            "</text>"
+          );
+        };
+        const col = val <= 3.5 ? "#1D8A4E" : val <= 5 ? "#C97A0E" : "#C42B2B";
+        return (
+          '<svg viewBox="0 0 200 108">' +
+          seg(MIN, 3.5, "#A7D4B8") +
+          seg(3.5, 5, "#F0CE96") +
+          seg(5, MAX, "#E5A29A") +
+          '<line x1="' +
+          m1x.toFixed(1) +
+          '" y1="' +
+          m1y.toFixed(1) +
+          '" x2="' +
+          m2x.toFixed(1) +
+          '" y2="' +
+          m2y.toFixed(1) +
+          '" stroke="#16202a" stroke-width="2"/>' +
+          '<line x1="' +
+          p1x.toFixed(1) +
+          '" y1="' +
+          p1y.toFixed(1) +
+          '" x2="' +
+          p2x.toFixed(1) +
+          '" y2="' +
+          p2y.toFixed(1) +
+          '" stroke="' +
+          col +
+          '" stroke-width="4.5" stroke-linecap="round"/>' +
+          '<text x="' +
+          cx +
+          '" y="' +
+          (cy - 6) +
+          '" text-anchor="middle" font-size="27" font-weight="800" fill="' +
+          col +
+          '">' +
+          (val == null ? "-" : val.toFixed(1)) +
+          '<tspan font-size="11" font-weight="600" fill="#5f6c76">명</tspan></text>' +
+          lab(MIN, "2") +
+          lab(3.5, "3.5") +
+          lab(5, "5.0") +
+          lab(MAX, "7") +
+          "</svg>"
+        );
+      }
+      /* 평균 충원율: 도넛(대구 평균 위치 눈금) */
+      function donutSVG(val) {
+        const cx = 55,
+          cy = 55,
+          r = 42,
+          c = 2 * Math.PI * r;
+        const th = (daeguAvg.fill / 100) * 2 * Math.PI;
+        const m = (rr) => [cx + rr * Math.sin(th), cy - rr * Math.cos(th)];
+        const [m1x, m1y] = m(r - 9),
+          [m2x, m2y] = m(r + 9);
+        return (
+          '<svg viewBox="0 0 110 110" style="width:150px;height:150px;flex:none">' +
+          '<circle cx="' +
+          cx +
+          '" cy="' +
+          cy +
+          '" r="' +
+          r +
+          '" fill="none" stroke="#eceff0" stroke-width="13"/>' +
+          '<circle cx="' +
+          cx +
+          '" cy="' +
+          cy +
+          '" r="' +
+          r +
+          '" fill="none" stroke="#2f6fed" stroke-width="13" stroke-dasharray="' +
+          ((c * val) / 100).toFixed(1) +
+          " " +
+          c.toFixed(1) +
+          '" stroke-linecap="round" transform="rotate(-90 ' +
+          cx +
+          " " +
+          cy +
+          ')"/>' +
+          '<line x1="' +
+          m1x.toFixed(1) +
+          '" y1="' +
+          m1y.toFixed(1) +
+          '" x2="' +
+          m2x.toFixed(1) +
+          '" y2="' +
+          m2y.toFixed(1) +
+          '" stroke="#16202a" stroke-width="2"/>' +
+          '<text x="' +
+          cx +
+          '" y="' +
+          (cy + 2) +
+          '" text-anchor="middle" font-size="19" font-weight="800" fill="#16202a">' +
+          (val == null ? "-" : val.toFixed(1)) +
+          '<tspan font-size="10" font-weight="600" fill="#5f6c76">%</tspan></text>' +
+          '<text x="' +
+          cx +
+          '" y="' +
+          (cy + 16) +
+          '" text-anchor="middle" font-size="8.5" fill="#949ea6">충원율</text>' +
+          "</svg>"
+        );
+      }
+
+      const SEV = {
+        완전공백: 0,
+        이중취약: 1,
+        물리적부족: 2,
+        질적미스매치: 3,
+        판정불가: 4,
+        양호: 5,
+      };
+      function buildPanel(gu) {
+        const rows = allDong.filter((r) => r["시군구명"] === gu);
+        const vals = rows
+          .map((r) => ({
+            n: r["읍면동명"],
+            pop: r["영유아인구_0_6세"] || 0,
+            t: r["미스매치_유형"] || "판정불가",
+          }))
+          .sort((a, b) => SEV[a.t] - SEV[b.t] || b.pop - a.pop);
+        const present = [...new Set(vals.map((d) => d.t))].sort(
+          (a, b) => SEV[a] - SEV[b],
+        );
+        const lg = present
+          .map(
+            (t) =>
+              '<span><span class="dot" style="background:' +
+              (TYPE_COLORS[t] || "#CBD0CE") +
+              '"></span>' +
+              (LABEL[t] || t) +
+              "</span>",
+          )
+          .join("");
+        const maxV = Math.max(1, ...vals.map((d) => d.pop));
+        const bars = vals
+          .map(
+            (d) =>
+              '<div class="vbar' +
+              (d.n === curDong ? " sel" : "") +
+              '" data-dong="' +
+              d.n +
+              '" title="' +
+              d.n +
+              " · " +
+              (LABEL[d.t] || d.t) +
+              " · 영유아 " +
+              d.pop +
+              '명"><i style="height:' +
+              Math.max(3, (d.pop / maxV) * 100).toFixed(0) +
+              "%;background:" +
+              (TYPE_COLORS[d.t] || "#CBD0CE") +
+              '"></i><span class="lb">' +
+              d.n +
+              "</span></div>",
+          )
+          .join("");
+
+        const teacherVals = rows
+          .map((r) => (r["교사아동비"] ? 1 / r["교사아동비"] : null))
+          .filter((v) => v != null);
+        const teacherAvg = teacherVals.length
+          ? teacherVals.reduce((a, b) => a + b, 0) / teacherVals.length
+          : null;
+        const fillVals = rows
+          .map((r) => r["전체_충원율"])
+          .filter((v) => v != null);
+        const fillAvg = fillVals.length
+          ? (fillVals.reduce((a, b) => a + b, 0) / fillVals.length) * 100
+          : null;
+
+        const diff =
+          fillAvg != null ? +(fillAvg - daeguAvg.fill).toFixed(1) : 0;
+        const delta =
+          fillAvg == null
+            ? ""
+            : diff >= 0
+              ? '<div class="gp-delta pos">대구 평균보다 ' +
+                diff.toFixed(1) +
+                "%p 높음</div>"
+              : '<div class="gp-delta neg">대구 평균보다 ' +
+                Math.abs(diff).toFixed(1) +
+                "%p 낮음</div>";
+
+        $("gupanel").innerHTML =
+          '<div class="gp-head"><h3>' +
+          gu +
+          '</h3><span class="cap">동별 영유아 인구 · 우선 해결 순으로 정렬</span></div>' +
+          '<div class="gp-grid">' +
+          '<div class="gp-card wide">' +
+          '<div class="cap" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">' +
+          '<span>동별 영유아 인구 — 막대 색 = 미스매치 유형</span><span class="gp-lg">' +
+          lg +
+          "</span></div>" +
+          (bars
+            ? '<div class="vchart" id="gpVchart">' + bars + "</div>"
+            : '<div class="cap" style="margin:0">동 데이터 없음</div>') +
+          "</div>" +
+          '<div class="gp-card"><div class="cap">교사 1인당 아동수</div>' +
+          '<div class="gp-dial">' +
+          dialSVG(teacherAvg == null ? daeguAvg.teacher : teacherAvg) +
+          "</div>" +
+          '<div class="cap" style="margin:4px 0 0">양호 ≤3.5 · 주의 ≤5.0 · 위험 >5.0 — 검은 눈금은 대구 평균 ' +
+          daeguAvg.teacher.toFixed(1) +
+          "명</div></div>" +
+          '<div class="gp-card"><div class="cap">평균 충원율</div>' +
+          '<div class="gp-donutwrap">' +
+          donutSVG(fillAvg == null ? daeguAvg.fill : fillAvg) +
+          '<div class="gp-dstats">' +
+          "<div><span>이 지역</span><b>" +
+          (fillAvg == null ? "-" : fillAvg.toFixed(1) + "%") +
+          "</b></div>" +
+          "<div><span>대구 평균</span><b>" +
+          daeguAvg.fill.toFixed(1) +
+          "%</b></div>" +
+          delta +
+          "</div></div>" +
+          '<div class="cap" style="margin:4px 0 0">도넛 위 검은 눈금 = 대구 평균 위치</div></div>' +
+          "</div>";
+
+        $("gupanel")
+          .querySelectorAll(".vbar")
+          .forEach((el) =>
+            el.addEventListener("click", () => openDong(el.dataset.dong)),
+          );
+      }
+      function markPanelBar() {
+        const el = $("gupanel");
+        if (!el) return;
+        el.querySelectorAll(".vbar").forEach((b) =>
+          b.classList.toggle("sel", b.dataset.dong === curDong),
+        );
+      }
+
+      /* ── 구 확대(focus+context) + 동 레이어 ── */
+      function setDims(gu) {
+        document.querySelectorAll(".gu").forEach((g) => {
+          g.classList.toggle("dim", g.dataset.gu !== gu);
+          g.classList.toggle("sel", g.dataset.gu === gu);
+        });
+      }
+      function clearDims() {
+        document
+          .querySelectorAll(".gu")
+          .forEach((g) => g.classList.remove("dim", "sel"));
+      }
+      function removeDongs() {
+        document.querySelectorAll(".dongLayer").forEach((g) => g.remove());
+      }
+      function mountDongs(gu, hostEl, zoomS) {
+        const entries = Object.entries(DONG_SHAPES).filter(
+          ([k]) => k.split("|")[0] === gu,
+        );
+        if (!entries.length) return;
         let minX = Infinity,
           maxX = -Infinity,
           minY = Infinity,
           maxY = -Infinity;
-        let pieces = "";
-
-        rows.forEach((r) => {
-          const shape = DONG_SHAPES[gu + "|" + r["읍면동명"]];
-          if (!shape) return;
-          const t = r["미스매치_유형"];
-          const c = TYPE_COLORS[t] || "#CBD0CE";
-          const title =
-            r["읍면동명"] +
+        entries.forEach(([, v]) => {
+          const b = bboxOf(v.d);
+          if (b.x < minX) minX = b.x;
+          if (b.x + b.w > maxX) maxX = b.x + b.w;
+          if (b.y < minY) minY = b.y;
+          if (b.y + b.h > maxY) maxY = b.y + b.h;
+        });
+        const db = { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+        const gb = bboxOf(GEO.gu[gu].d);
+        const s2 = Math.min(gb.w / db.w, gb.h / db.h) * 0.99;
+        const tx = gb.x + gb.w / 2 - s2 * (db.x + db.w / 2);
+        const ty = gb.y + gb.h / 2 - s2 * (db.y + db.h / 2);
+        const fs = 11.5 / (cssScale() * zoomS * s2),
+          halo = fs / 5;
+        let inner = "";
+        entries.forEach(([key, v]) => {
+          const name = key.split("|")[1];
+          const r = allDong.find(
+            (x) => x["시군구명"] === gu && x["읍면동명"] === name,
+          );
+          const t = r ? r["미스매치_유형"] : "판정불가";
+          const pop = r ? num(r["영유아인구_0_6세"]) : "-";
+          inner +=
+            '<path data-dong="' +
+            name +
+            '" fill="' +
+            (TYPE_COLORS[t] || "#CBD0CE") +
+            '" d="' +
+            v.d +
+            '"><title>' +
+            name +
             " · " +
             (LABEL[t] || t) +
             " · 영유아 " +
-            num(r["영유아인구_0_6세"]) +
-            "명";
-          pieces +=
-            '<path class="dong-piece" data-dong="' +
-            r["읍면동명"] +
-            '" fill="' +
-            c +
-            '" d="' +
-            shape.d +
-            '"><title>' +
-            title +
-            "</title></path>";
-
-          (shape.d.match(/-?\d+,-?\d+/g) || []).forEach((p) => {
-            const [x, y] = p.split(",").map(Number);
-            if (x < minX) minX = x;
-            if (x > maxX) maxX = x;
-            if (y < minY) minY = y;
-            if (y > maxY) maxY = y;
-          });
+            pop +
+            "명</title></path>";
         });
-
-        let vb = "0 0 100 100",
-          vbWidth = 100;
-        if (isFinite(minX)) {
-          const padX = (maxX - minX) * 0.08 || 20;
-          const padY = (maxY - minY) * 0.08 || 20;
-          vbWidth = maxX - minX + padX * 2;
-          const vbHeight = maxY - minY + padY * 2;
-          vb =
-            (minX - padX).toFixed(0) +
-            " " +
-            (minY - padY).toFixed(0) +
-            " " +
-            vbWidth.toFixed(0) +
-            " " +
-            vbHeight.toFixed(0);
-        }
-        // 좌표 단위가 미터라 스케일이 커서, 획 두께/글자 크기를 그 구의 실제 폭에
-        // 비례해 정해야 구마다(작은 도심구 vs 넓은 군위군) 화면상 굵기가 일정해 보인다.
-        const strokeW = Math.max(60, vbWidth / 500);
-        const fontSize = Math.max(500, vbWidth / 48);
-        const haloW = fontSize / 6;
-
-        let labels = "";
-        rows.forEach((r) => {
-          const shape = DONG_SHAPES[gu + "|" + r["읍면동명"]];
-          if (!shape) return;
-          labels +=
+        entries.forEach(([key, v]) => {
+          const name = key.split("|")[1];
+          inner +=
             '<text class="dong-label" x="' +
-            shape.c[0] +
+            v.c[0] +
             '" y="' +
-            shape.c[1] +
+            v.c[1] +
             '" font-size="' +
-            fontSize.toFixed(0) +
+            fs.toFixed(1) +
             '" stroke-width="' +
-            haloW.toFixed(0) +
+            halo.toFixed(2) +
             '">' +
-            r["읍면동명"] +
+            name +
             "</text>";
         });
-
-        $("popGrid").innerHTML = rows.length
-          ? '<div class="gu-shape-wrap"><svg class="gu-shape-map" viewBox="' +
-            vb +
-            '" role="img" aria-label="' +
-            gu +
-            ' 지도"><g stroke-width="' +
-            strokeW.toFixed(0) +
-            '">' +
-            pieces +
-            "</g>" +
-            labels +
-            "</svg></div>"
-          : '<div style="color:var(--faint);font-size:12.5px">이 조건에 맞는 동이 없습니다.</div>';
-
-        $("popGrid")
-          .querySelectorAll(".dong-piece")
-          .forEach((p) =>
-            p.addEventListener("click", () => openDong(p.dataset.dong)),
-          );
-
-        $("pop").setAttribute("data-open", "");
-        $("veil").setAttribute("data-open", "");
-        renderMap();
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.setAttribute("class", "dongLayer");
+        g.setAttribute(
+          "transform",
+          "translate(" + tx + " " + ty + ") scale(" + s2 + ")",
+        );
+        g.innerHTML = inner;
+        hostEl.appendChild(g);
+        g.style.opacity = 0;
+        requestAnimationFrame(() => {
+          g.style.transition = "opacity .45s ease .28s";
+          g.style.opacity = 1;
+        });
+        g.querySelectorAll("path").forEach((p) =>
+          p.addEventListener("click", (e) => {
+            e.stopPropagation();
+            openDong(p.dataset.dong);
+          }),
+        );
+        markSelected();
       }
-      function closePop() {
+
+      function zoomTo(gu) {
+        removeDongs();
+        if (zoomGu === gu) {
+          back();
+          return;
+        }
+        closeDetail();
+        zoomGu = gu;
+        curGu = gu;
+        document.body.classList.add("zoomed", "haspanel");
+        document.body.classList.toggle("gwzoom", gu === "군위군");
+        setDims(gu);
+        const R = halfRect();
+        if (gu === "군위군") {
+          animateT(worldEl, ID, DUR);
+          const to = fitT(bboxOf(GEO.gu.군위군.d), 0.08, R);
+          animateT(gwEl, to, DUR);
+          setTimeout(() => mountDongs(gu, gwEl, to.s), DUR - 250);
+        } else {
+          animateT(gwEl, insetT, DUR);
+          const to = fitT(bboxOf(GEO.gu[gu].d), 0.1, R);
+          animateT(worldEl, to, DUR);
+          setTimeout(() => mountDongs(gu, worldEl, to.s), DUR - 250);
+        }
+        buildPanel(gu);
+        refreshColors();
+      }
+      function back() {
+        removeDongs();
+        zoomGu = null;
         curGu = null;
-        $("pop").removeAttribute("data-open");
-        $("veil").removeAttribute("data-open");
-        renderMap();
+        curDong = null;
+        document.body.classList.remove("zoomed", "gwzoom", "haspanel");
+        clearDims();
+        animateT(worldEl, ID, DUR);
+        animateT(gwEl, insetT, DUR);
+        closeDetail();
+        refreshColors();
+      }
+      // 기존 코드 호환용 별칭 (필터·ESC 등에서 호출)
+      function closePop() {
+        back();
       }
 
       /* ── 동 상세 (평당가 제외) ── */
+      function teacherRatioColor(v) {
+        if (v == null) return "#94A0A8";
+        if (v <= 3.5) return "#1D8A4E";
+        if (v <= 5) return "#C97A0E";
+        return "#C42B2B";
+      }
       function openDong(name) {
         const r = allDong.find(
           (x) => x["시군구명"] === curGu && x["읍면동명"] === name,
@@ -1726,6 +2601,8 @@
         const t = r["미스매치_유형"];
         const row = (k, v) =>
           '<div class="rw"><span>' + k + "</span><span>" + v + "</span></div>";
+        const teacherVal = r["교사아동비"] ? 1 / r["교사아동비"] : null;
+        const tColor = teacherRatioColor(teacherVal);
 
         $("detail").innerHTML =
           '<div class="top"><div><h3>' +
@@ -1739,19 +2616,31 @@
           '">' +
           (LABEL[t] || t) +
           "</span>" +
+          '<div class="stat-highlight">' +
+          '<div class="stat-box">' +
+          '<div class="stat-label">영유아(0-6세)</div>' +
+          '<div class="stat-num">' +
+          num(r["영유아인구_0_6세"]) +
+          "<small>명</small></div>" +
+          "</div>" +
+          '<div class="stat-box" style="border-color:' +
+          tColor +
+          "33;background:" +
+          tColor +
+          '14">' +
+          '<div class="stat-label">교사 1인당 아동수</div>' +
+          '<div class="stat-num" style="color:' +
+          tColor +
+          '">' +
+          (teacherVal != null ? teacherVal.toFixed(1) : "-") +
+          "<small>명</small></div>" +
+          "</div>" +
+          "</div>" +
           '<div class="rows">' +
-          row("영유아(0-6세)", num(r["영유아인구_0_6세"]) + "명") +
           row("영아(0-2세)", num(r["영아인구_0_2세"]) + "명") +
           row("유아(3-6세)", num(r["유아인구_3_6세"]) + "명") +
-          row("유치원", (r["유치원수"] || 0) + "곳") +
-          row("어린이집", (r["어린이집수"] || 0) + "곳") +
-          row("체육시설", (r["체육시설수"] || 0) + "곳") +
           row(
-            "아이 대비 자리",
-            r["전체_커버율"] != null ? pct(r["전체_커버율"]) : "-",
-          ) +
-          row(
-            "자리 충원",
+            "충원율",
             r["전체_충원율"] != null ? pct(r["전체_충원율"]) : "-",
           ) +
           "</div>";
@@ -1767,13 +2656,15 @@
       }
       function markSelected() {
         document
-          .querySelectorAll(".dong-piece")
+          .querySelectorAll(".dongLayer path")
           .forEach((p) =>
             p.classList.toggle("sel", p.dataset.dong === curDong),
           );
+        markPanelBar();
       }
 
       /* ── 유형 필터 ── */
+      let curDrillType = null;
       function setType(type) {
         $("typeFilter").value = type;
         if (type === "완전공백") $("gunwi").checked = true;
@@ -1781,20 +2672,150 @@
         closePop();
       }
       function highlightQuadrant(btn) {
-        const on = btn.getAttribute("aria-pressed") === "true";
-        document
-          .querySelectorAll(".q")
-          .forEach((q) => q.setAttribute("aria-pressed", "false"));
-        btn.setAttribute("aria-pressed", String(!on));
-        closeDrill(false);
-        setType(on ? "" : btn.dataset.type);
+        if (curDrillType === btn.dataset.type) {
+          closeDrill();
+        } else {
+          openDrill(btn.dataset.type);
+        }
       }
 
-      /* ── 시설 없음 목록 ── */
-      function openDrill() {
-        const rows = allDong.filter((r) => r["미스매치_유형"] === "완전공백");
+      const DONUT_PALETTE = [
+        "#2f6fed",
+        "#e0623c",
+        "#1d8a4e",
+        "#c9a227",
+        "#8e5bd6",
+        "#d6427a",
+        "#2ab3a6",
+        "#8a6d3b",
+        "#6b7280",
+      ];
+      /* ── 유형별 동 목록 상단에 붙는 구·군별 분포 도넛 차트 ── */
+      function renderDrillDonut(rows) {
+        const el = $("drillDonut");
+        if (!rows.length) {
+          el.innerHTML = "";
+          return;
+        }
+        const byGu = {};
+        rows.forEach((r) => {
+          byGu[r["시군구명"]] = (byGu[r["시군구명"]] || 0) + 1;
+        });
+        const entries = Object.entries(byGu).sort((a, b) => b[1] - a[1]);
+        const total = rows.length;
+
+        const R = 46,
+          CX = 58,
+          CY = 58,
+          SW = 20;
+        const circ = 2 * Math.PI * R;
+        let acc = 0;
+        const arcs = entries
+          .map(([gu, cnt], i) => {
+            const len = (cnt / total) * circ;
+            const color = DONUT_PALETTE[i % DONUT_PALETTE.length];
+            const dash = len.toFixed(2) + " " + (circ - len).toFixed(2);
+            const offset = (-acc).toFixed(2);
+            acc += len;
+            return (
+              '<circle r="' +
+              R +
+              '" cx="' +
+              CX +
+              '" cy="' +
+              CY +
+              '" fill="none" stroke="' +
+              color +
+              '" stroke-width="' +
+              SW +
+              '" stroke-dasharray="' +
+              dash +
+              '" stroke-dashoffset="' +
+              offset +
+              '" transform="rotate(-90 ' +
+              CX +
+              " " +
+              CY +
+              ')" />'
+            );
+          })
+          .join("");
+
+        const svg =
+          '<svg width="116" height="116" viewBox="0 0 116 116">' +
+          arcs +
+          '<text x="' +
+          CX +
+          '" y="' +
+          (CY - 3) +
+          '" text-anchor="middle" class="donut-center-label">' +
+          total +
+          "</text>" +
+          '<text x="' +
+          CX +
+          '" y="' +
+          (CY + 14) +
+          '" text-anchor="middle" class="donut-center-sub">곳</text>' +
+          "</svg>";
+
+        const legend =
+          '<div class="donut-legend">' +
+          entries
+            .map(([gu, cnt], i) => {
+              const color = DONUT_PALETTE[i % DONUT_PALETTE.length];
+              return (
+                '<div class="dl-row"><span class="dl-dot" style="background:' +
+                color +
+                '"></span><span class="dl-name">' +
+                gu +
+                '</span><span class="dl-cnt">' +
+                cnt +
+                "곳</span></div>"
+              );
+            })
+            .join("") +
+          "</div>";
+
+        el.innerHTML = svg + legend;
+      }
+
+      /* ── 유형별(시설없음/양호/수요초과형/공급초과형/이중취약) 동 목록 ── */
+      function openDrill(type) {
+        type = type || "완전공백";
+        curDrillType = type;
+        const gw = $("gunwi").checked;
+        const rows = allDong.filter(
+          (r) =>
+            r["미스매치_유형"] === type &&
+            (type === "완전공백" || gw || r["시군구명"] !== "군위군"),
+        );
+        $("drillTitle").textContent =
+          type === "완전공백"
+            ? "시설이 한 곳도 없는 지역"
+            : (LABEL[type] || type) + " " + rows.length + "곳";
+        $("drillCap").textContent =
+          type === "완전공백"
+            ? "숫자만으로는 모두 같은 \u201c공백\u201d이지만, 배경은 서로 다릅니다."
+            : "구·군마다 영유아 인구가 가장 많은 동 1곳입니다.";
+        renderDrillDonut(rows);
+
+        // 구·군별로 영유아 인구가 가장 많은 동 1곳만 뽑아 보여준다
+        // (군위군 포함 시 9곳, 아니면 8곳까지 자연스럽게 늘어난다)
+        const topByGu = {};
+        rows.forEach((r) => {
+          const g = r["시군구명"];
+          if (
+            !topByGu[g] ||
+            (r["영유아인구_0_6세"] || 0) > (topByGu[g]["영유아인구_0_6세"] || 0)
+          ) {
+            topByGu[g] = r;
+          }
+        });
+        const topRows = Object.values(topByGu).sort(
+          (a, b) => (b["영유아인구_0_6세"] || 0) - (a["영유아인구_0_6세"] || 0),
+        );
         $("blankList").innerHTML =
-          rows
+          topRows
             .map(
               (r) =>
                 '<div class="bi"><span class="loc">' +
@@ -1807,16 +2828,25 @@
             )
             .join("") || '<div class="bi">해당 지역 없음</div>';
         $("drill").hidden = false;
-        $("blankBtn").setAttribute("aria-expanded", "true");
+        $("blankBtn").setAttribute(
+          "aria-expanded",
+          String(type === "완전공백"),
+        );
         document
           .querySelectorAll(".q")
-          .forEach((q) => q.setAttribute("aria-pressed", "false"));
-        setType("완전공백");
+          .forEach((q) =>
+            q.setAttribute("aria-pressed", String(q.dataset.type === type)),
+          );
+        setType(type);
       }
       function closeDrill(reset) {
+        curDrillType = null;
         if ($("drill").hidden) return;
         $("drill").hidden = true;
         $("blankBtn").setAttribute("aria-expanded", "false");
+        document
+          .querySelectorAll(".q")
+          .forEach((q) => q.setAttribute("aria-pressed", "false"));
         if (reset !== false) setType("");
       }
 
@@ -1860,6 +2890,7 @@
               체육시설수: Math.round(rnd() * 8),
               전체_커버율: 0.3 + rnd() * 1.5,
               전체_충원율: 0.35 + rnd() * 0.6,
+              교사아동비: 0.15 + rnd() * 0.3,
               미스매치_유형: t,
             });
           }
@@ -1894,16 +2925,23 @@
         allDong.forEach((r) => {
           cnt[r["미스매치_유형"]] = (cnt[r["미스매치_유형"]] || 0) + 1;
         });
-        $("kpi-total").textContent = allDong.length;
         $("kpi-blank").textContent = cnt["완전공백"] || 0;
         CORE_MATRIX_TYPES.forEach((t) => {
           const el = $("cnt-" + t);
           if (el) el.innerHTML = (cnt[t] || 0) + "<small>곳</small>";
         });
         const f = allDong.filter((r) => r["전체_충원율"] != null);
-        $("kpi-fill").textContent = pct(
-          f.reduce((a, r) => a + r["전체_충원율"], 0) / f.length,
-        );
+        const fillAvgFrac =
+          f.reduce((a, r) => a + r["전체_충원율"], 0) / f.length;
+        $("kpi-fill").textContent = pct(fillAvgFrac);
+        const t2 = allDong.filter((r) => r["교사아동비"]);
+        const teacherAvg = t2.length
+          ? t2.reduce((a, r) => a + 1 / r["교사아동비"], 0) / t2.length
+          : 5.3;
+        $("kpi-teacher").textContent = t2.length
+          ? teacherAvg.toFixed(1) + "명"
+          : "-";
+        daeguAvg = { fill: fillAvgFrac * 100, teacher: teacherAvg };
       }
 
       async function load() {
@@ -1930,21 +2968,23 @@
           .querySelectorAll(".q")
           .forEach((q) => q.setAttribute("aria-pressed", "false"));
         closeDetail();
-        closePop();
+        back();
       });
       $("gunwi").addEventListener("change", () => {
-        closeDetail();
-        closePop();
+        const checked = $("gunwi").checked;
+        if (!checked && zoomGu === "군위군") back();
+        applyInsetVisibility();
+        refreshColors();
+        if (curDrillType) openDrill(curDrillType);
       });
-      $("popClose").addEventListener("click", closePop);
-      $("veil").addEventListener("click", closePop);
+      $("backBtn").addEventListener("click", back);
       $("blankBtn").addEventListener("click", () =>
-        $("drill").hidden ? openDrill() : closeDrill(),
+        curDrillType === "완전공백" ? closeDrill() : openDrill("완전공백"),
       );
       $("drillClose").addEventListener("click", () => closeDrill());
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
-          closePop();
+          back();
           closeDetail();
         }
       });
