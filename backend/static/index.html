@@ -6,26 +6,32 @@
     <title>대구 영유아 돌봄 인프라 분석</title>
     <link
       rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
+    />
+    <link
+      rel="stylesheet"
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
     />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <style>
       :root {
-        --ink: #16202a;
-        --ink-2: #2c3b48;
-        --sub: #5f6c76;
-        --faint: #949ea6;
-        --paper: #f5f7f7;
-        --card: #ffffff;
-        --rule: #e4e8e8;
-        --signal: #b3271e;
-        --mono: "Pretendard", -apple-system, sans-serif;
+        --navy: #14202b;
+        --navy-2: #1d2e3d;
+        --paper: #f4f6f5;
+        --line: #d9dfdd;
+        --ink: #14202b;
+        --sub: #5b6b70;
+        --accent: #c8622d;
+        --c-full: #8b0000;
+        --c-double: #ff4500;
+        --c-physical: #ffa500;
+        --c-quality: #4169e1;
+        --c-good: #2e8b57;
+        --c-na: #a9a9a9;
+        --mono: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
       }
       * {
         box-sizing: border-box;
-      }
-      html,
-      body {
-        height: 100%;
       }
       body {
         margin: 0;
@@ -36,1309 +42,1296 @@
           -apple-system,
           sans-serif;
         -webkit-font-smoothing: antialiased;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
       }
-
-      /* ── 상단 ── */
-      .bar {
-        background: var(--ink);
-        color: #fff;
-        padding: 14px 26px;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-        gap: 20px;
-        flex: none;
-      }
-      .titlewrap {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
-      .bar h1 {
-        margin: 0;
-        font-size: 32px;
-        font-weight: 700;
-        letter-spacing: -0.2px;
-        line-height: 1;
-      }
-      .bar .src {
-        font-size: 26px;
-        color: #9fb0bd;
-        line-height: 1;
-      }
-
-      .stats {
-        display: flex;
-        gap: 10px;
-        flex: none;
-        margin-bottom: 16px;
-        margin-left: 53px;
-      }
-      .stats > * {
-        background: var(--paper);
-        border: 1px solid var(--rule);
-        border-radius: 9px;
-        padding: 8px 14px;
-        text-align: left;
-        font: inherit;
+      a {
         color: inherit;
-        min-width: 96px;
-      }
-      .stats button {
-        cursor: pointer;
-        transition: 0.15s;
-      }
-      .stats button:hover {
-        border-color: var(--signal);
-      }
-      .stats button[aria-expanded="true"] {
-        border-color: var(--signal);
-        background: #fdf3f2;
-      }
-      .lb {
-        font-size: 11px;
-        color: var(--faint);
-        margin-bottom: 2px;
-      }
-      .vl {
-        font-size: 21px;
-        font-weight: 700;
-        font-family: var(--mono);
-        letter-spacing: -0.5px;
       }
 
-      /* ── 본문 ── */
-      .wrap {
-        position: relative;
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        background: var(--card);
-      }
-      .col {
-        position: relative;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        min-height: 0;
-      }
-
-      /* 2×2 매트릭스 */
-      .mx {
-        display: grid;
-        grid-template-columns: 40px 1fr 1fr;
-        grid-template-rows: 18px 1fr 1fr;
-        gap: 6px;
-        flex: none;
-      }
-      /* ▼ 축 라벨: 검정 + 위→아래 정방향 */
-      .ax {
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--ink);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-      }
-      .ax.v {
-        writing-mode: vertical-rl;
-        text-orientation: upright;
-        letter-spacing: 1px;
-      }
-
-      .q {
-        border: 0;
-        background: var(--card);
-        border-radius: 9px;
-        padding: 9px 10px;
-        text-align: center;
-        cursor: pointer;
-        font: inherit;
+      header.top {
+        background: var(--navy);
         color: #fff;
+        padding: 22px 32px 0 32px;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        gap: 3px;
-        transition: 0.15s;
+        gap: 16px;
       }
-      .q:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 3px 10px rgba(22, 32, 42, 0.18);
-      }
-      .q[aria-pressed="true"] {
-        outline: 3px solid var(--ink);
-        outline-offset: 2px;
-      }
-      .q .n {
-        font-family: var(--mono);
-        font-size: 20px;
-        font-weight: 700;
-        line-height: 1;
-        letter-spacing: -1px;
-      }
-      .q .n small {
-        font-size: 11px;
-        font-weight: 500;
-        margin-left: 2px;
-        color: rgba(255, 255, 255, 0.75);
-      }
-      .q .nm {
-        font-size: 12.5px;
-        font-weight: 700;
-      }
-      .q .ds {
-        font-size: 10px;
-        color: rgba(255, 255, 255, 0.88);
-        line-height: 1.25;
-        text-align: center;
-      }
-      .q.good {
-        background: #dcefe1;
-        color: #1f6b3d;
-      }
-      .q.good .n small {
-        color: var(--faint);
-      }
-      .q.good .ds {
-        color: var(--sub);
-      }
-      .q.phys {
-        background: #fde4c4;
-        color: #a85a00;
-      }
-      .q.phys .n small {
-        color: #c98a3d;
-      }
-      .q.phys .ds {
-        color: #a85a00;
-        opacity: 0.85;
-      }
-      .q.qual {
-        background: #e1dffb;
-        color: #4b3fa0;
-      }
-      .q.qual .n small {
-        color: #7d72c9;
-      }
-      .q.qual .ds {
-        color: #4b3fa0;
-        opacity: 0.85;
-      }
-      .q.dbl {
-        background: #fbd8d8;
-        color: #a32d2d;
-      }
-      .q.dbl .n small {
-        color: #c46a6a;
-      }
-      .q.dbl .ds {
-        color: #a32d2d;
-        opacity: 0.85;
-      }
-
-      .keys {
-        margin-top: 9px;
-        margin-bottom: 22px;
+      header.top .header-content {
         display: flex;
+        align-items: baseline;
+        justify-content: space-between;
         flex-wrap: wrap;
-        gap: 6px 13px;
-        font-size: 11px;
-        color: var(--sub);
-        flex: none;
+        gap: 12px;
       }
-      .keys span {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
+      header.top .brand {
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
       }
-      .keys i {
-        width: 11px;
-        height: 11px;
-        border-radius: 3px;
-        display: inline-block;
+      header.top h1 {
+        font-size: 20px;
+        margin: 0;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      header.top .tag {
+        font-size: 12px;
+        color: #9fb1bc;
+        font-family: var(--mono);
+      }
+      header.top .meta {
+        font-size: 12px;
+        color: #9fb1bc;
       }
 
-      /* 완전공백 목록 */
-      .drill {
-        margin-top: 9px;
-        width: 300px;
-        max-width: 100%;
-        background: var(--card);
-        border: 1px solid var(--rule);
-        border-radius: 11px;
-        padding: 11px 14px;
-        box-shadow: 0 10px 28px rgba(22, 32, 42, 0.14);
+      /* 네비게이션 탭 바 */
+      nav.tab-nav {
+        display: flex;
+        gap: 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
       }
-      .drill:not([hidden]) {
+      .tab-btn {
+        background: transparent;
+        border: none;
+        color: #9fb1bc;
+        padding: 12px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        transition: all 0.2s ease;
+        font-family: inherit;
+      }
+      .tab-btn:hover {
+        color: #fff;
+      }
+      .tab-btn.active {
+        color: #fff;
+        border-bottom-color: var(--accent);
+      }
+
+      main {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 28px 24px 80px;
+      }
+
+      .tab-page {
+        display: none;
+      }
+      .tab-page.active {
         display: block;
       }
-      .drill .top {
+
+      /* 1. 진단 대시보드 탭 스타일 */
+      section.matrix-wrap {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 24px;
+        margin-bottom: 32px;
+      }
+      @media (max-width: 880px) {
+        section.matrix-wrap {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .matrix-card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 22px 24px;
+      }
+      .matrix-header {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 4px;
-      }
-      .drill h3 {
-        margin: 0;
-        font-size: 13px;
-      }
-      .closebtn {
-        border: 0;
-        background: none;
-        color: var(--faint);
-        cursor: pointer;
-        font-size: 11px;
-      }
-      .cap {
-        margin: 0 0 8px;
-        font-size: 11.5px;
-        color: var(--sub);
-        line-height: 1.5;
-      }
-      .bi {
-        display: flex;
         justify-content: space-between;
-        align-items: baseline;
-        gap: 10px;
-        border-top: 1px solid var(--rule);
-        padding: 5px 0;
-        font-size: 11.5px;
+        margin-bottom: 14px;
       }
-      .bi .loc {
+      .matrix-card h2 {
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--sub);
+        margin: 0;
         font-weight: 700;
       }
-      .bi .bipop {
-        color: var(--sub);
-        white-space: nowrap;
-      }
-      #drillDonut {
-        display: flex;
+
+      .btn-open-window {
+        background: var(--navy);
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        font-size: 11.5px;
+        font-weight: 600;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.15s ease;
+        display: inline-flex;
         align-items: center;
-        gap: 14px;
-        padding: 6px 0 12px;
-        border-bottom: 1px solid var(--rule);
-        margin-bottom: 4px;
-      }
-      #drillDonut svg {
-        flex: none;
-      }
-      .donut-legend {
-        flex: 1;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
         gap: 4px;
       }
-      .donut-legend .dl-row {
-        display: flex;
-        align-items: center;
+      .btn-open-window:hover {
+        background: var(--accent);
+      }
+
+      .btn-reset {
+        background: var(--paper);
+        color: var(--ink);
+        border: 1px solid var(--line);
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .btn-reset:hover {
+        background: var(--navy);
+        color: #fff;
+      }
+
+      .quad-grid {
+        display: grid;
+        grid-template-columns: 70px 1fr 1fr;
+        grid-template-rows: 24px 1fr 1fr;
         gap: 6px;
-        font-size: 11.5px;
-        color: var(--ink-2);
+        height: 280px;
       }
-      .donut-legend .dl-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        flex: none;
-      }
-      .donut-legend .dl-name {
-        flex: 1;
-        min-width: 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .donut-legend .dl-cnt {
+      .axis-label {
+        font-size: 11px;
+        color: var(--sub);
         font-family: var(--mono);
-        color: var(--sub);
-        flex: none;
-      }
-      .donut-center-label {
-        font-size: 17px;
-        font-weight: 800;
-        fill: var(--ink);
-      }
-      .donut-center-sub {
-        font-size: 8.5px;
-        fill: var(--faint);
-      }
-
-      /* ── 지도 ── */
-      .maphead {
-        padding: 0;
-        border-bottom: none;
-        display: none;
-        flex: none;
-        z-index: 5;
-        background: var(--ink);
-      }
-      .maphead h2 {
-        display: none;
-      }
-      .maphead .sub {
-        display: none;
-      }
-      .tools {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-      }
-      .chk {
-        font-size: 22px;
-        color: var(--sub);
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        cursor: pointer;
-      }
-      .bar .chk {
-        color: rgba(255, 255, 255, 0.82);
-      }
-      .bar .chk input {
-        width: 22px;
-        height: 22px;
-      }
-      select {
-        border: 1px solid var(--rule);
-        background: var(--card);
-        border-radius: 8px;
-        padding: 5px 10px;
-        font: inherit;
-        font-size: 22px;
-        color: var(--ink-2);
-        cursor: pointer;
-      }
-
-      .stage {
-        flex: 1;
-        min-height: 0;
-        padding: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
       }
-
-      /* ── 지도 위 오버레이 패널 (매트릭스: 좌측 상단 / 통계: 우측 상단) ── */
-      .panel {
-        position: absolute;
-        top: 15px;
-        z-index: 15;
-        max-width: 340px;
+      .axis-y {
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
       }
-      .panel-matrix {
-        left: 20px;
-        background: var(--card);
-        border: 1px solid var(--rule);
-        border-radius: 12px;
-        box-shadow: 0 10px 28px rgba(22, 32, 42, 0.14);
-        padding: 16px 17px;
-        max-height: calc(100% - 60px);
-        overflow: auto;
-      }
-      .panel-stats {
-        right: 20px;
-        width: 300px;
-        max-width: 300px;
-        height: calc(100% - 98px);
-        max-height: calc(100% - 98px);
-        display: flex;
-        flex-direction: column;
-        overflow: auto;
-      }
-      .panel-stats .stats {
-        margin: 0;
-        flex: none;
-        gap: 8px;
-      }
-      .panel-stats .stats > * {
-        box-shadow: 0 6px 18px rgba(22, 32, 42, 0.1);
-        flex: 1 1 0;
-        min-width: 0;
-        width: 0;
-        padding: 8px 8px;
-      }
-      .panel-stats .lb {
-        font-size: 10px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: clip;
-      }
-      .panel-stats .vl {
-        font-size: 18px;
-        white-space: nowrap;
-      }
-      .chart-sec {
-        margin-top: 14px;
-        padding-top: 14px;
-        border-top: 1px solid var(--rule);
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-      }
-      .chart-title {
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--ink);
-        margin-bottom: 10px;
-      }
-      #guChart {
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-      }
-      .bar-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 18px;
-        border: 1px solid var(--rule);
-        border-radius: 10px;
-        padding: 13px 12px;
-      }
-      .bar-row .bar-label {
-        width: 54px;
-        flex: none;
-        color: var(--ink);
-        font-weight: 600;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .bar-row .bar-track {
-        flex: 1;
-        height: 16px;
-        background: var(--paper);
-        border-radius: 5px;
-        overflow: hidden;
-      }
-      .bar-row .bar-fill {
-        height: 100%;
-        border-radius: 5px;
-        background: #2f6fed;
-      }
-      .bar-row .bar-val {
-        width: 50px;
-        flex: none;
-        text-align: right;
-        font-family: var(--mono);
-        color: var(--ink-2);
-        font-weight: 700;
-        font-size: 16px;
-      }
-      /* ── 지도: 항상 viewCore 고정, 구 클릭 시 transform으로 확대(focus+context) ── */
-      .stage {
-        position: relative;
-      }
-      .stage > svg {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-      }
-      .gu path {
-        stroke: #fff;
-        stroke-width: 1.8;
+      .quad {
+        border-radius: 4px;
+        padding: 12px 14px;
         cursor: pointer;
         transition:
-          opacity 0.5s ease,
-          filter 0.5s ease,
-          stroke-width 0.16s;
-        vector-effect: non-scaling-stroke;
+          transform 0.12s ease,
+          box-shadow 0.12s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        border: 2px solid transparent;
       }
-      .gu:hover path {
-        stroke: var(--ink);
+      .quad:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
       }
-      .gu.on path {
-        stroke: var(--ink);
-        stroke-width: 2.4;
-      }
-      /* 확대된 상태에서는 선택된 구 테두리를 강조하지 않는다 —
-         화면 가득 확대된 도형에 굵은 검은 테두리가 그대로 남아 지저분해 보이므로,
-         옆 구와 같은 흰색 경계선으로 되돌린다. */
-      body.zoomed .gu.on path,
-      body.zoomed .gu.sel path {
-        stroke: #fff;
-        stroke-width: 1.8;
-      }
-      /* 확대 시 주변 구: 회색·반투명으로 맥락만 남긴다 */
-      .gu.dim path {
-        opacity: 0.22;
-        filter: grayscale(0.7) brightness(1.04);
-      }
-      .gu.dim:hover path {
-        stroke: #fff;
-      }
-      .gu.sel path {
-        pointer-events: none;
-      }
-      /* 배경 처리 옵션: 회색 면 대신 윤곽선만 (필요 시 body.outline으로 전환) */
-      body.outline .gu.dim path {
-        opacity: 1;
-        filter: none;
-        fill: transparent;
-        stroke: #d3d9dd;
-        stroke-width: 1.2;
-      }
-
-      .lbl {
-        cursor: pointer;
-        transition: opacity 0.35s;
-      }
-      .lbl text {
-        pointer-events: none;
-        text-anchor: middle;
-        fill: var(--ink);
-      }
-      .lbl rect {
-        pointer-events: none;
-      }
-      .gname {
-        font-size: 21px;
-        font-weight: 700;
-      }
-      .gnum {
-        font-size: 14px;
-        font-family: var(--mono);
-        opacity: 0.65;
-      }
-      body.zoomed .lbl {
-        opacity: 0;
-        pointer-events: none;
-      }
-
-      /* ── 군위군 인셋 (본지도 비율과 무관하게 별도 축척으로 우측 상단에 표시) ── */
-      .insetUI {
-        transition: opacity 0.4s;
-      }
-      .insetUI .frame {
-        fill: #fff;
-        stroke: #c7cdd2;
-        stroke-width: 1.2;
-        stroke-dasharray: 5 4;
-        vector-effect: non-scaling-stroke;
-      }
-      .insetUI .cap {
-        font-size: 10.5px;
-        fill: var(--sub);
-        font-weight: 600;
-      }
-      body.zoomed .insetUI {
-        opacity: 0.2;
-      }
-      body.gwzoom .insetUI {
-        opacity: 0;
-      }
-      body.noinset .insetUI,
-      body.noinset .gu-gw {
-        display: none;
-      }
-
-      /* ── 동 레이어 (확대 후 나타남) ── */
-      .dongLayer path {
-        stroke: #fff;
-        stroke-width: 1.1;
-        cursor: pointer;
-        transition: filter 0.12s;
-        vector-effect: non-scaling-stroke;
-      }
-      .dongLayer path:hover {
-        filter: brightness(0.92);
-      }
-      .dongLayer path.sel {
-        filter: brightness(0.8);
-      }
-      .dong-label {
-        pointer-events: none;
-        text-anchor: middle;
-        dominant-baseline: middle;
-        font-weight: 700;
-        fill: var(--ink);
-        paint-order: stroke;
-        stroke: #fff;
-        stroke-linejoin: round;
-      }
-
-      /* ── 뒤로가기 버튼 ── */
-      .backbtn {
-        position: absolute;
-        top: 14px;
-        left: 14px;
-        z-index: 6;
-        display: none;
-        align-items: center;
-        gap: 6px;
-        border: 1px solid var(--rule);
-        background: var(--card);
-        border-radius: 9px;
-        padding: 8px 13px;
-        font: inherit;
-        font-size: 12.5px;
-        font-weight: 600;
-        color: var(--ink-2);
-        cursor: pointer;
-        box-shadow: 0 6px 18px rgba(22, 32, 42, 0.12);
-      }
-      .backbtn:hover {
+      .quad.active {
         border-color: var(--ink);
       }
-      body.zoomed .backbtn {
-        display: inline-flex;
+      .quad .count {
+        font-family: var(--mono);
+        font-size: 32px;
+        font-weight: 700;
+        line-height: 1;
+      }
+      .quad .name {
+        font-size: 13px;
+        font-weight: 600;
+        margin-top: 6px;
+      }
+      .quad .desc {
+        font-size: 11px;
+        color: rgba(0, 0, 0, 0.55);
+        margin-top: 2px;
       }
 
-      /* ── 우측(또는 하단) 대시보드 패널: 구 확대 시 화면 반절을 채운다 ── */
-      .gupanel {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        width: 50%;
-        z-index: 5;
-        background: var(--paper);
-        border-left: 1px solid var(--rule);
-        box-shadow: -14px 0 30px rgba(22, 32, 42, 0.1);
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
+      .q-good {
+        background: #e8f3ec;
+      }
+      .q-good .count {
+        color: var(--c-good);
+      }
+      .q-physical {
+        background: #fff3e0;
+      }
+      .q-physical .count {
+        color: #b36b00;
+      }
+      .q-quality {
+        background: #eaf0fc;
+      }
+      .q-quality .count {
+        color: var(--c-quality);
+      }
+      .q-double {
+        background: #ffe9e0;
+      }
+      .q-double .count {
+        color: #c53e00;
+      }
+
+      .kpi-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1px;
+        background: var(--line);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .kpi {
+        background: #fff;
         padding: 16px 18px;
-        overflow: auto;
-        transform: translateX(103%);
-        transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) 0.12s;
       }
-      body.zoomed.haspanel .gupanel {
-        transform: none;
+      .kpi .label {
+        font-size: 11px;
+        color: var(--sub);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
       }
-      .gp-head {
-        flex: none;
+      .kpi .value {
+        font-family: var(--mono);
+        font-size: 24px;
+        font-weight: 700;
+        margin-top: 4px;
+      }
+      .kpi .value.na {
+        color: var(--c-full);
+      }
+      .kpi .sub-note {
+        font-size: 10.5px;
+        color: var(--sub);
+        margin-top: 3px;
+      }
+      .callout-note {
+        background: #fff3e0;
+        border-left: 3px solid var(--accent);
+        padding: 8px 12px;
+        border-radius: 3px;
+        color: var(--ink) !important;
+      }
+      .callout-note b {
+        color: var(--accent);
+        font-family: var(--mono);
+      }
+      .kpi.clickable {
+        cursor: pointer;
+        transition: background 0.15s ease;
+      }
+      .kpi.clickable:hover {
+        background: #f7f0ea;
+      }
+
+      #blankDetail {
+        display: none;
+        margin-top: 16px;
+        border-top: 1px dashed var(--line);
+        padding-top: 14px;
+      }
+      #blankDetail.show {
+        display: block;
+      }
+      #blankDetail h4 {
+        font-size: 12px;
+        margin: 0 0 10px;
+        color: var(--sub);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .blank-item {
+        padding: 10px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 12.5px;
+      }
+      .blank-item:last-child {
+        border-bottom: none;
+      }
+      .blank-item .loc {
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+      .blank-item .reason {
+        color: var(--sub);
+        line-height: 1.6;
+      }
+
+      /* 토글러 영역 */
+      .toggle-content {
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+      }
+      .toggle-content.visible {
+        display: block;
+        opacity: 1;
+      }
+
+      /* map */
+      section.map-section {
+        margin-bottom: 32px;
+      }
+      .panel-title {
         display: flex;
-        align-items: baseline;
-        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
         flex-wrap: wrap;
+        gap: 10px;
       }
-      .gp-head h3 {
+      .panel-title h2 {
+        font-size: 16px;
         margin: 0;
-        font-size: 19px;
+        font-weight: 700;
       }
-      .gp-head .cap {
-        font-size: 11.5px;
-        color: var(--faint);
+      .filters {
+        display: flex;
+        gap: 8px;
+        align-items: center;
       }
-      .gp-grid {
-        flex: 1;
-        min-height: 0;
+      select {
+        font-family: "Pretendard", sans-serif;
+        font-size: 12px;
+        padding: 6px 10px;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        background: #fff;
+        color: var(--ink);
+      }
+      #map {
+        height: 480px;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+      }
+      .legend-row {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+        font-size: 11px;
+        color: var(--sub);
+      }
+      .legend-row span.dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px;
+      }
+
+      /* 2. 분석 도구 탭 (6장/7장) 스타일 */
+      section.analysis-page {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1.3fr 1fr;
-        gap: 12px;
+        gap: 24px;
       }
-      .gp-card.wide {
-        grid-column: 1 / -1;
+      @media (max-width: 880px) {
+        section.analysis-page {
+          grid-template-columns: 1fr;
+        }
       }
-      .gp-card {
-        background: var(--card);
-        border: 1px solid var(--rule);
-        border-radius: 11px;
-        padding: 14px 16px;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
+      .card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 24px 26px;
       }
-      .gp-card .cap {
-        font-size: 15px;
-        font-weight: 700;
-        color: var(--ink-2);
-        margin-bottom: 8px;
-      }
-      .gp-lg {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 5px 12px;
-        font-size: 11.5px;
-        color: var(--ink-2);
-      }
-      .gp-lg .dot {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        margin-right: 4px;
-        box-shadow: inset 0 0 0 1px rgba(22, 32, 42, 0.18);
-      }
-      /* 동별 세로 막대그래프 */
-      .vchart {
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        align-items: flex-end;
-        gap: 5px;
-        padding: 2px 2px 98px;
-      }
-      .vbar {
-        flex: 1;
-        min-width: 0;
-        height: 100%;
-        display: flex;
-        align-items: flex-end;
-        position: relative;
-        cursor: pointer;
-      }
-      .vbar i {
-        display: block;
-        width: 100%;
-        border-radius: 4px 4px 0 0;
-        min-height: 3px;
-        box-shadow: inset 0 0 0 1px rgba(22, 32, 42, 0.12);
-      }
-      .vbar:hover i,
-      .vbar.sel i {
-        filter: brightness(0.88);
-      }
-      .vbar.sel i {
-        outline: 2px solid var(--ink);
-        outline-offset: -2px;
-      }
-      .vbar .lb {
-        position: absolute;
-        top: calc(100% + 5px);
-        left: 50%;
-        transform: translateX(-50%);
-        writing-mode: vertical-rl;
-        text-orientation: upright;
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--ink);
-        max-height: 92px;
-        overflow: hidden;
-        white-space: nowrap;
-      }
-      /* 하단 카드: 교사비 반원 게이지 · 충원율 도넛 */
-      .gp-dial {
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .gp-dial svg {
-        width: 100%;
-        height: 100%;
-        max-height: 210px;
-      }
-      .gp-donutwrap {
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        align-items: center;
-        gap: 18px;
-      }
-      .gp-dstats {
-        flex: 1;
-        min-width: 0;
+      .card h3 {
         font-size: 16px;
-        color: var(--ink-2);
+        margin: 0 0 6px;
+        font-weight: 700;
       }
-      .gp-dstats > div {
+      .card .sub {
+        font-size: 12.5px;
+        color: var(--sub);
+        margin-bottom: 16px;
+      }
+
+      .weight-bar-row {
         display: flex;
-        justify-content: space-between;
+        align-items: center;
         gap: 10px;
-        padding: 5px 0;
-        white-space: nowrap;
+        margin-bottom: 12px;
+        font-size: 12.5px;
       }
-      .gp-dstats b {
-        font-weight: 800;
+      .weight-bar-row .name {
+        width: 150px;
+        flex-shrink: 0;
+        color: var(--sub);
       }
-      .gp-delta {
-        margin-top: 7px;
-        font-size: 15px;
-        font-weight: 800;
-        line-height: 1.3;
-        white-space: normal !important;
+      .weight-bar-track {
+        flex: 1;
+        background: #eef1f0;
+        border-radius: 3px;
+        height: 10px;
+        overflow: hidden;
       }
-      .gp-delta.pos {
-        color: #1d8a4e;
+      .weight-bar-fill {
+        height: 100%;
+        background: var(--accent);
       }
-      .gp-delta.neg {
-        color: #c42b2b;
-      }
-
-      body.zoomed .panel-matrix,
-      body.zoomed .panel-stats {
-        display: none;
-      }
-
-      /* 좁은 화면: 좌우 반반 대신 위(지도)/아래(대시보드) 상하 분할 */
-      @media (max-width: 1100px) {
-        .gupanel {
-          top: auto;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          width: auto;
-          height: 55%;
-          border-left: none;
-          border-top: 1px solid var(--rule);
-          box-shadow: 0 -14px 30px rgba(22, 32, 42, 0.1);
-          transform: translateY(103%);
-        }
-        body.zoomed.haspanel .gupanel {
-          transform: none;
-        }
+      .weight-bar-row .pct {
+        width: 48px;
+        text-align: right;
+        font-family: var(--mono);
       }
 
-      @media (prefers-reduced-motion: reduce) {
-        .gu path,
-        .lbl,
-        .insetUI,
-        .gupanel,
-        .dongLayer path {
-          transition: none !important;
-        }
+      table.reg-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        margin-top: 6px;
+      }
+      table.reg-table th,
+      table.reg-table td {
+        padding: 8px 6px;
+        text-align: right;
+        border-bottom: 1px solid var(--line);
+      }
+      table.reg-table th:first-child,
+      table.reg-table td:first-child {
+        text-align: left;
+      }
+      table.reg-table th {
+        color: var(--sub);
+        font-weight: 600;
+        font-size: 11px;
+        text-transform: uppercase;
+      }
+      .sig-star {
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .r2-badge {
+        font-family: var(--mono);
+        font-size: 12px;
+        background: #f1f0ec;
+        padding: 4px 8px;
+        border-radius: 3px;
+        display: inline-block;
+        margin-top: 10px;
+      }
+      .caveat {
+        font-size: 11px;
+        color: var(--sub);
+        margin-top: 10px;
+        line-height: 1.5;
+        border-top: 1px dashed var(--line);
+        padding-top: 8px;
       }
 
-      .demo {
-        position: fixed;
-        right: 14px;
-        bottom: 12px;
-        background: #fff4e5;
-        border: 1px solid #f0d3a8;
-        color: #8a5a12;
-        font-size: 11.5px;
-        padding: 6px 11px;
-        border-radius: 7px;
-        display: none;
-        z-index: 50;
+      .diag-line {
+        font-size: 12.5px;
+        color: var(--sub);
+        margin-top: 8px;
+        line-height: 1.6;
+      }
+      .diag-line b {
+        color: var(--ink);
+        font-family: var(--mono);
       }
 
-      @media (max-width: 1100px) {
-        body {
-          overflow: auto;
-        }
-        .wrap {
-          overflow: visible;
-        }
-        .panel {
-          position: static;
-          max-width: none;
-          margin: 12px 16px 0;
-        }
-        .stage {
-          min-height: 460px;
-        }
+      /* 3. 인사이트 탭 스타일 */
+      .insight-card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 24px 26px;
+        margin-bottom: 20px;
       }
-      @media (prefers-reduced-motion: reduce) {
-        * {
-          transition: none !important;
-        }
+      .insight-card .eyebrow {
+        font-size: 11px;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 700;
+      }
+      .insight-card h3 {
+        font-size: 16px;
+        margin: 4px 0 14px;
+        font-weight: 700;
+      }
+      .insight-quote {
+        font-size: 14px;
+        line-height: 1.7;
+        padding: 14px 16px;
+        background: var(--paper);
+        border-left: 3px solid var(--accent);
+        margin: 14px 0;
+        font-weight: 500;
+      }
+      table.insight-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+        margin: 10px 0;
+      }
+      table.insight-table th,
+      table.insight-table td {
+        padding: 8px 10px;
+        text-align: right;
+        border-bottom: 1px solid var(--line);
+      }
+      table.insight-table th:first-child,
+      table.insight-table td:first-child {
+        text-align: left;
+      }
+      table.insight-table th {
+        color: var(--sub);
+        font-weight: 600;
+        font-size: 11px;
+        text-transform: uppercase;
+        background: var(--paper);
+      }
+      table.insight-table td.hot {
+        color: var(--c-full);
+        font-weight: 700;
+      }
+      .insight-note {
+        font-size: 12px;
+        color: var(--sub);
+        line-height: 1.6;
+        margin-top: 6px;
+      }
+      .policy-list {
+        margin: 0;
+        padding-left: 18px;
+        font-size: 13px;
+        line-height: 1.9;
+      }
+
+      footer {
+        text-align: center;
+        font-size: 11px;
+        color: var(--sub);
+        padding: 24px;
       }
     </style>
   </head>
   <body>
-    <div class="bar">
-      <div class="titlewrap">
-        <h1>대구 영유아 돌봄 인프라 분석</h1>
-        <span class="src">읍면동 단위 · 공공데이터 기반</span>
+    <header class="top">
+      <div class="header-content">
+        <div class="brand">
+          <h1>대구 영유아 돌봄 인프라 분석</h1>
+          <span class="tag">FastAPI + pandas · 150개 읍면동</span>
+        </div>
+        <div class="meta" id="lastUpdated">데이터 로딩 중…</div>
       </div>
-      <div class="tools">
-        <label class="chk"
-          ><input type="checkbox" id="gunwi" /> 군위군 포함</label
-        >
-        <select id="typeFilter">
-          <option value="">전체 유형</option>
-          <option value="완전공백">시설 없음</option>
-          <option value="이중취약">이중 취약</option>
-          <option value="물리적부족">수요초과형</option>
-          <option value="질적미스매치">공급초과형</option>
-          <option value="양호">양호</option>
-          <option value="판정불가">판정 보류</option>
-        </select>
-      </div>
-    </div>
 
-    <div class="wrap" id="wrap">
-      <div class="maphead">
-        <div>
-          <h2 id="mapTitle">대구광역시</h2>
-          <div class="sub" id="mapSub">
-            구·군을 누르면 그 안의 동이 나옵니다
+      <!-- 상단 네비게이션 탭 -->
+      <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="tab-dashboard">
+          진단 대시보드
+        </button>
+        <button class="tab-btn" data-tab="tab-insights">핵심 인사이트</button>
+        <button class="tab-btn" data-tab="tab-analysis">
+          분석 도구 (6·7장)
+        </button>
+      </nav>
+    </header>
+
+    <main>
+      <!-- TAB 1: 진단 대시보드 -->
+      <div id="tab-dashboard" class="tab-page active">
+        <section class="matrix-wrap">
+          <div class="matrix-card">
+            <div class="matrix-header">
+              <h2>미스매치 진단 매트릭스</h2>
+              <button class="btn-open-window" id="btnOpenMapWindow">
+                돌봄지도 새 창으로 보기 ↗
+              </button>
+            </div>
+            <div class="quad-grid">
+              <div></div>
+              <div class="axis-label">충원율 높음</div>
+              <div class="axis-label">충원율 낮음</div>
+
+              <div class="axis-label axis-y">커버율 높음</div>
+              <div class="quad q-good" data-type="양호">
+                <div class="count" id="cnt-양호">–</div>
+                <div class="name">양호</div>
+                <div class="desc">공급 충분 · 이용 활발 → 현상 유지</div>
+              </div>
+              <div class="quad q-quality" data-type="질적미스매치">
+                <div class="count" id="cnt-질적미스매치">–</div>
+                <div class="name">질적 미스매치</div>
+                <div class="desc">시설 있는데 안 감 → 원인 조사 필요</div>
+              </div>
+
+              <div class="axis-label axis-y">커버율 낮음</div>
+              <div class="quad q-physical" data-type="물리적부족">
+                <div class="count" id="cnt-물리적부족">–</div>
+                <div class="name">물리적 부족</div>
+                <div class="desc">시설 적어 꽉 참 → 시설 확충</div>
+              </div>
+              <div class="quad q-double" data-type="이중취약">
+                <div class="count" id="cnt-이중취약">–</div>
+                <div class="name">이중 취약</div>
+                <div class="desc">공급도 이용도 낮음 → 종합 개입</div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <div class="stage" id="stage">
-        <button class="backbtn" id="backBtn">← 대구 전체</button>
-        <div class="gupanel" id="gupanel"></div>
-      </div>
-
-      <!-- 좌측 상단 오버레이: 4분면 매트릭스 -->
-      <div class="panel panel-matrix">
-        <div class="mx">
-          <div></div>
-          <div class="ax">커버율 높음</div>
-          <div class="ax">커버율 낮음</div>
-
-          <div class="ax v">충원율 높음</div>
-          <button class="q good" data-type="양호" aria-pressed="false">
-            <span class="n" id="cnt-양호">–<small>곳</small></span>
-            <span class="nm">양호</span>
-            <span class="ds">자리도 넉넉하고 잘 이용합니다</span>
-          </button>
-          <button class="q phys" data-type="물리적부족" aria-pressed="false">
-            <span class="n" id="cnt-물리적부족">–<small>곳</small></span>
-            <span class="nm">수요초과형</span>
-            <span class="ds">자리가 모자라 이미 꽉 찼습니다</span>
-          </button>
-
-          <div class="ax v">충원율 낮음</div>
-          <button class="q qual" data-type="질적미스매치" aria-pressed="false">
-            <span class="n" id="cnt-질적미스매치">–<small>곳</small></span>
-            <span class="nm">공급초과형</span>
-            <span class="ds">자리는 있는데 아이가 가지 않습니다</span>
-          </button>
-          <button class="q dbl" data-type="이중취약" aria-pressed="false">
-            <span class="n" id="cnt-이중취약">–<small>곳</small></span>
-            <span class="nm">이중 취약</span>
-            <span class="ds">자리도 적고 이용도 저조합니다</span>
-          </button>
-        </div>
-
-        <div class="keys">
-          <span><i style="background: #7a1414"></i>시설 없음</span>
-          <span><i style="background: #fbd8d8; border: 1px solid var(--rule)"></i>이중 취약</span>
-          <span><i style="background: #fde4c4; border: 1px solid var(--rule)"></i>수요초과형</span>
-          <span><i style="background: #e1dffb; border: 1px solid var(--rule)"></i>공급초과형</span>
-          <span
-            ><i style="background: #dcefe1; border: 1px solid var(--rule)"></i
-            >양호</span
-          >
-          <span><i style="background: #cbd0ce"></i>판정 보류</span>
-        </div>
-
-        <div class="drill" id="drill" hidden>
-          <div class="top">
-            <h3 id="drillTitle">시설이 한 곳도 없는 지역</h3>
-            <button class="closebtn" id="drillClose">닫기</button>
+          <div class="matrix-card">
+            <h2>핵심 지표 요약</h2>
+            <div class="kpi-strip">
+              <div class="kpi">
+                <div class="label">분석 대상 동</div>
+                <div class="value" id="kpi-total">–</div>
+              </div>
+              <div class="kpi clickable" id="kpiBlankBox">
+                <div class="label">완전 공백</div>
+                <div class="value na" id="kpi-blank">–</div>
+              </div>
+              <div class="kpi">
+                <div class="label">커버율 (중앙값)</div>
+                <div class="value" id="kpi-cover">–</div>
+                <div class="sub-note" id="kpi-cover-sub">–</div>
+              </div>
+              <div class="kpi">
+                <div class="label">평균 충원율</div>
+                <div class="value" id="kpi-fill">–</div>
+              </div>
+            </div>
+            <p class="diag-line" style="margin-top: 16px">
+              수요(영유아인구) · 공급(정원) · 실현(현원) 3대 지표를 조합해
+              "시설이 없는 곳"과 "시설은 있는데 이용이 저조한 곳"을 구분합니다.
+              원인은 시설 품질·안전·접근성 등 다양할 수 있으며, 정량
+              데이터만으로 단정하지 않습니다.
+            </p>
+            <p
+              class="diag-line callout-note"
+              id="coverageInsight"
+              style="margin-top: 10px"
+            ></p>
+            <div id="blankDetail">
+              <h4>완전공백 지역 상세</h4>
+              <div id="blankList"></div>
+            </div>
           </div>
-          <p class="cap" id="drillCap">
-            숫자만으로는 모두 같은 “공백”이지만, 배경은 서로 다릅니다.
-          </p>
-          <div id="drillDonut"></div>
-          <div id="blankList"></div>
+        </section>
+
+        <!-- 사분면 클릭 시 표시되는 동적 지도 영역 -->
+        <div id="dynamicMapContent" class="toggle-content">
+          <section class="map-section" id="mapSection">
+            <div class="panel-title">
+              <h2>읍면동별 돌봄 인프라 지도</h2>
+              <div class="filters">
+                <select id="guFilter">
+                  <option value="">전체 구·군</option>
+                </select>
+                <select id="typeFilter">
+                  <option value="">전체 유형</option>
+                  <option value="완전공백">완전공백</option>
+                  <option value="이중취약">이중취약</option>
+                  <option value="물리적부족">물리적부족</option>
+                  <option value="질적미스매치">질적미스매치</option>
+                  <option value="양호">양호</option>
+                  <option value="판정불가">판정불가</option>
+                </select>
+                <button class="btn-reset" id="btnResetMap">전체보기</button>
+              </div>
+            </div>
+            <div id="map"></div>
+            <div class="legend-row">
+              <span
+                ><span class="dot" style="background: #8b0000"></span
+                >완전공백</span
+              >
+              <span
+                ><span class="dot" style="background: #ff4500"></span
+                >이중취약</span
+              >
+              <span
+                ><span class="dot" style="background: #ffa500"></span
+                >물리적부족</span
+              >
+              <span
+                ><span class="dot" style="background: #4169e1"></span
+                >질적미스매치</span
+              >
+              <span
+                ><span class="dot" style="background: #2e8b57"></span>양호</span
+              >
+              <span
+                ><span class="dot" style="background: #a9a9a9"></span
+                >판정불가</span
+              >
+            </div>
+          </section>
         </div>
       </div>
 
-      <!-- 우측 상단 오버레이: 통계 -->
-      <div class="panel panel-stats">
-        <div class="stats">
-          <div>
-            <div class="lb">교사 1인당 아동수</div>
-            <div class="vl" id="kpi-teacher">–</div>
-          </div>
-          <button id="blankBtn" aria-expanded="false">
-            <div class="lb">시설 없음</div>
-            <div class="vl" id="kpi-blank">–</div>
-          </button>
-          <div>
-            <div class="lb">평균 충원율</div>
-            <div class="vl" id="kpi-fill">–</div>
-          </div>
+      <!-- TAB 2: 핵심 인사이트 -->
+      <div id="tab-insights" class="tab-page">
+        <div class="panel-title" style="margin-bottom: 16px">
+          <h2>핵심 인사이트 — 인구이동 데이터로 본 돌봄 공백</h2>
         </div>
-
-        <div class="chart-sec" id="chartSec">
-          <div class="chart-title">구·군별 평균 충원율</div>
-          <div id="guChart"></div>
-        </div>
+        <div id="insightsBody">불러오는 중…</div>
       </div>
-    </div>
 
-    <div class="demo" id="demo">시안 미리보기 — 샘플 데이터로 표시 중</div>
+      <!-- TAB 3: 분석 도구 (6장 / 7장) -->
+      <div id="tab-analysis" class="tab-page">
+        <section class="analysis-page">
+          <div class="card">
+            <h3>6장 · 엔트로피 가중치 종합지수</h3>
+            <div class="sub">
+              전체_커버율 + 체육밀도 → Min-Max 정규화 후 지역 간 변동성 기반
+              자동 가중
+            </div>
+            <div id="weightBars"></div>
+            <div class="diag-line" id="entropyDiag"></div>
+          </div>
+
+          <div class="card">
+            <h3>7장 · 회귀분석 (검증 도구)</h3>
+            <div class="sub">종합지수가 임의가 아님을 통계적으로 확인</div>
+            <div id="regressionBody">불러오는 중…</div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      대구 영유아 돌봄 인프라 분석 · 공공데이터(행안부/교육부/국토부/KOSIS) 기반
+      · 원인 단정이 아닌 진단 지표 제공
+    </footer>
 
     <script>
       const TYPE_COLORS = {
-        완전공백: "#7A1414",
-        이중취약: "#FBD8D8",
-        물리적부족: "#FDE4C4",
-        질적미스매치: "#E1DFFB",
-        양호: "#DCEFE1",
-        판정불가: "#CBD0CE",
-      };
-      const TYPE_TEXT = {
-        이중취약: "#A32D2D",
-        물리적부족: "#A85A00",
-        질적미스매치: "#4B3FA0",
-        양호: "#1F6B3D",
-      };
-      const LABEL = {
-        완전공백: "시설 없음",
-        이중취약: "이중 취약",
-        물리적부족: "수요초과형",
-        질적미스매치: "공급초과형",
-        양호: "양호",
-        판정불가: "판정 보류",
-      };
-      const PALE = new Set(["양호", "판정불가"]);
-      const WEAK = new Set(["완전공백", "이중취약", "물리적부족"]);
-
-      /* ── 대구 구·군 실제 행정경계 ── */
-      const GEO = {
-        viewCore: "8.0 672.6 744.8 908.6",
-        viewAll: "8.0 8.0 984.0 1573.2",
-        gu: {
-          중구: {
-            d: "M426.6,1031.2 L412.3,1023.2 L410.9,1011.9 L419.1,1004.5 L421.2,1001.3 L420.6,1001.0 L420.9,996.0 L416.1,997.8 L414.1,995.3 L414.0,993.3 L416.2,988.6 L420.5,990.6 L418.9,988.6 L418.1,981.6 L447.5,988.5 L447.6,990.6 L454.8,990.3 L464.0,993.6 L469.4,993.3 L474.2,991.5 L477.1,993.9 L481.8,1005.9 L479.1,1011.6 L471.9,1020.6 L470.4,1028.5 L471.0,1034.2 L453.8,1033.0 L451.2,1031.4 L447.1,1030.7 L435.2,1030.3 L426.6,1031.2Z",
-            label: [447.5, 1008.7],
-            n_dong: 12,
-          },
-          동구: {
-            d: "M468.0,987.8 L468.7,985.9 L473.5,982.9 L476.4,979.5 L477.2,976.7 L486.5,960.8 L494.8,953.9 L504.9,960.0 L511.6,951.8 L506.4,940.5 L503.5,928.9 L505.3,921.7 L510.2,915.0 L513.2,904.3 L512.1,895.1 L511.7,881.2 L509.2,876.5 L505.2,872.8 L499.3,859.4 L499.7,856.4 L502.2,854.2 L503.1,840.0 L496.8,836.5 L496.3,833.6 L498.2,820.6 L501.1,817.0 L501.7,812.7 L491.9,791.9 L487.3,786.2 L487.7,783.0 L490.1,779.0 L489.4,774.6 L486.8,771.9 L485.1,771.6 L480.6,764.2 L479.4,760.7 L475.2,755.7 L467.7,749.9 L463.0,748.3 L461.4,746.4 L467.2,743.1 L478.0,725.9 L480.0,725.5 L483.9,722.0 L486.2,712.9 L499.2,707.3 L512.1,706.4 L523.6,704.0 L526.6,701.2 L529.3,701.9 L533.0,701.2 L545.0,707.5 L551.7,703.0 L567.9,701.0 L570.1,698.5 L571.8,694.8 L573.9,693.5 L589.1,693.9 L601.1,692.4 L607.5,693.4 L613.6,692.4 L616.4,689.9 L620.4,688.6 L625.0,695.6 L630.4,699.8 L655.8,706.9 L662.0,706.5 L674.0,713.7 L679.7,720.5 L679.7,728.6 L684.9,730.0 L688.4,735.0 L687.8,736.7 L690.4,739.0 L689.2,741.8 L685.4,745.7 L683.8,751.3 L684.4,756.0 L686.3,760.4 L692.5,763.2 L692.3,768.9 L695.8,773.7 L700.6,776.8 L707.3,779.5 L709.3,783.8 L708.5,792.5 L705.9,796.4 L702.4,809.8 L699.1,814.2 L697.1,819.4 L701.9,835.1 L704.8,840.6 L706.9,842.7 L708.4,842.8 L707.0,844.1 L697.8,862.9 L695.0,874.7 L696.0,877.0 L706.5,890.9 L716.4,899.4 L721.9,901.1 L727.2,905.6 L730.0,910.8 L734.2,922.8 L730.6,924.7 L728.9,926.9 L728.2,932.4 L729.3,946.8 L733.1,955.1 L736.5,967.7 L736.8,973.7 L730.3,984.4 L731.2,988.8 L734.6,993.5 L730.9,1000.8 L733.5,1011.7 L722.9,1014.7 L718.9,1028.6 L710.1,1030.7 L702.6,1036.7 L700.0,1041.1 L695.8,1043.1 L693.3,1043.2 L691.4,1042.8 L674.7,1029.5 L671.1,1023.1 L659.4,1018.3 L654.2,1018.3 L640.1,1027.1 L636.5,1028.3 L615.4,1027.3 L606.4,1025.3 L598.7,1022.4 L595.3,1018.6 L594.9,1008.0 L588.0,994.8 L583.3,993.6 L566.1,995.9 L564.9,995.0 L560.6,987.3 L553.4,988.9 L547.2,984.7 L542.1,984.0 L534.7,987.3 L524.3,995.0 L515.9,998.1 L508.0,1008.8 L481.8,1005.9 L477.1,993.9 L468.0,987.8Z",
-            label: [599.8, 867.9],
-            n_dong: 22,
-          },
-          서구: {
-            d: "M400.4,1021.1 L366.4,1035.0 L361.2,1031.8 L358.6,1032.4 L352.8,1031.3 L352.2,1025.3 L340.8,1025.3 L342.0,1018.4 L337.3,1016.2 L328.8,1014.9 L327.3,1013.2 L326.2,1007.8 L319.2,1006.8 L316.3,1002.9 L318.3,1000.2 L319.9,995.4 L319.4,989.1 L318.4,984.7 L313.0,974.6 L313.1,972.5 L319.3,966.9 L327.1,965.2 L328.4,963.9 L328.1,961.5 L337.1,964.2 L346.5,962.5 L356.1,956.3 L357.2,953.9 L371.5,947.4 L378.5,957.5 L415.0,964.3 L425.3,969.6 L422.0,982.5 L418.1,981.6 L418.9,988.6 L420.5,990.6 L416.2,988.6 L414.0,993.3 L414.1,995.3 L416.1,997.8 L420.9,996.0 L420.6,1001.0 L421.2,1001.3 L419.1,1004.5 L410.9,1011.9 L411.6,1017.6 L400.4,1021.1Z",
-            label: [367.1, 991.9],
-            n_dong: 17,
-          },
-          남구: {
-            d: "M423.2,1127.2 L417.8,1118.4 L417.2,1113.0 L415.6,1114.8 L413.9,1114.5 L406.3,1110.1 L406.2,1105.5 L405.2,1103.6 L401.3,1099.6 L397.5,1099.4 L392.0,1095.8 L390.0,1093.5 L383.5,1081.1 L379.1,1078.0 L390.7,1058.6 L396.2,1053.3 L410.6,1042.3 L412.3,1023.2 L426.6,1031.2 L435.2,1030.3 L447.1,1030.7 L451.2,1031.4 L453.8,1033.0 L471.0,1034.2 L468.4,1048.1 L469.3,1055.4 L467.5,1055.4 L467.9,1058.0 L469.6,1057.8 L469.7,1061.4 L466.8,1076.1 L467.8,1083.7 L470.1,1092.4 L469.2,1092.9 L466.0,1088.6 L465.2,1099.1 L458.2,1119.1 L445.6,1123.8 L439.1,1132.1 L435.5,1134.6 L432.5,1135.4 L431.4,1135.3 L426.7,1125.0 L427.3,1122.1 L423.2,1127.2Z",
-            label: [424.3, 1079.6],
-            n_dong: 13,
-          },
-          북구: {
-            d: "M422.0,982.5 L425.3,969.6 L415.0,964.3 L378.5,957.5 L371.5,947.4 L357.2,953.9 L356.1,956.3 L350.2,960.6 L343.4,963.5 L337.1,964.2 L328.1,961.5 L327.0,960.2 L321.0,957.8 L304.3,952.5 L295.8,953.8 L290.3,957.9 L292.1,931.4 L295.5,923.6 L302.2,915.3 L314.1,909.4 L321.2,902.7 L323.4,900.0 L323.4,896.4 L327.9,890.0 L334.5,887.3 L334.3,876.6 L340.3,870.4 L342.0,865.9 L341.7,863.2 L343.8,854.8 L341.9,838.8 L339.6,828.6 L343.1,812.7 L341.1,808.6 L335.9,804.0 L334.5,791.1 L329.8,776.7 L330.2,775.1 L333.8,772.2 L333.0,765.6 L336.5,765.7 L347.0,770.9 L356.3,777.6 L362.1,789.8 L362.8,795.9 L364.9,799.8 L369.0,804.6 L374.7,807.8 L375.7,807.2 L375.2,802.0 L380.2,797.2 L379.7,789.5 L380.5,786.7 L381.6,785.8 L394.3,781.8 L399.4,776.3 L407.9,771.4 L420.2,771.2 L427.2,772.3 L439.7,769.0 L444.5,765.5 L445.3,760.7 L451.2,758.0 L454.0,757.8 L461.5,753.4 L463.0,748.3 L467.7,749.9 L475.2,755.7 L479.4,760.7 L480.6,764.2 L485.1,771.6 L486.8,771.9 L489.4,774.6 L490.1,779.0 L487.7,783.0 L487.3,786.2 L491.9,791.9 L501.7,812.7 L501.1,817.0 L498.2,820.6 L496.4,831.5 L496.8,836.5 L503.1,840.0 L502.2,854.2 L499.7,856.4 L499.3,859.4 L505.2,872.8 L509.2,876.5 L511.7,881.2 L512.1,895.1 L513.2,904.3 L510.2,915.0 L505.3,921.7 L503.5,928.9 L506.4,940.5 L511.6,951.8 L504.9,960.0 L494.8,953.9 L486.5,960.8 L477.2,976.7 L476.4,979.5 L468.2,987.1 L468.0,987.8 L474.2,991.5 L473.1,992.1 L467.0,993.8 L462.3,993.2 L454.8,990.3 L447.6,990.6 L447.5,988.5 L422.0,982.5Z",
-            label: [421.9, 871.6],
-            n_dong: 23,
-          },
-          수성구: {
-            d: "M518.3,1138.7 L513.5,1137.8 L510.3,1138.3 L499.4,1135.2 L495.0,1140.6 L483.9,1142.7 L471.0,1140.9 L446.8,1135.4 L440.2,1130.8 L445.6,1123.8 L458.2,1119.1 L465.2,1099.1 L466.0,1088.6 L469.2,1092.9 L470.1,1092.4 L467.8,1083.7 L466.8,1076.1 L469.7,1061.4 L469.6,1057.8 L467.9,1058.0 L467.5,1055.4 L469.3,1055.4 L468.4,1048.1 L471.1,1035.4 L470.8,1023.9 L471.9,1020.6 L479.1,1011.6 L481.8,1005.9 L508.0,1008.8 L515.9,998.1 L524.3,995.0 L534.7,987.3 L542.1,984.0 L544.5,983.8 L553.4,988.9 L560.6,987.3 L564.9,995.0 L566.1,995.9 L583.3,993.6 L588.0,994.8 L594.9,1008.0 L595.3,1018.6 L598.7,1022.4 L604.7,1024.7 L615.4,1027.3 L636.5,1028.3 L640.1,1027.1 L653.9,1018.4 L658.3,1018.3 L663.7,1019.5 L671.1,1023.1 L674.7,1029.5 L672.7,1028.0 L666.7,1031.3 L673.3,1037.2 L674.8,1057.1 L673.5,1058.9 L671.1,1066.1 L673.0,1074.4 L669.8,1076.2 L665.0,1075.1 L661.0,1076.1 L648.2,1089.6 L644.4,1096.4 L644.8,1103.9 L646.9,1108.5 L652.6,1114.0 L657.1,1131.6 L660.1,1137.4 L657.3,1139.4 L648.0,1141.3 L629.8,1158.9 L629.5,1162.2 L624.2,1164.3 L621.4,1162.2 L619.8,1159.0 L617.3,1159.2 L613.8,1161.4 L610.5,1168.2 L599.3,1173.4 L585.9,1161.2 L581.3,1160.7 L571.5,1156.4 L563.7,1154.2 L558.3,1155.0 L548.3,1152.3 L546.6,1150.5 L544.4,1145.6 L541.4,1144.2 L535.8,1146.8 L526.3,1147.0 L521.9,1141.0 L518.3,1138.7Z",
-            label: [562.3, 1080.0],
-            n_dong: 23,
-          },
-          달서구: {
-            d: "M355.1,1177.7 L348.4,1180.7 L340.3,1180.6 L331.9,1177.3 L330.0,1168.7 L326.8,1168.0 L313.4,1156.3 L311.3,1153.6 L307.2,1143.2 L303.1,1140.6 L296.7,1138.6 L297.9,1135.0 L306.5,1130.5 L305.1,1127.9 L298.6,1125.6 L292.4,1120.6 L281.4,1115.8 L274.4,1115.1 L269.9,1117.2 L263.3,1114.4 L249.2,1113.8 L250.1,1105.7 L247.1,1098.2 L243.6,1092.9 L232.3,1081.1 L233.0,1052.7 L236.4,1024.4 L238.1,1019.9 L243.9,1019.0 L245.8,1016.9 L247.8,1011.2 L252.5,1006.7 L260.8,1006.1 L264.3,1008.7 L274.0,1012.6 L285.2,1015.3 L289.8,1010.8 L296.3,1010.1 L301.6,1005.3 L310.2,1006.0 L316.3,1002.9 L319.2,1006.8 L326.2,1007.8 L327.3,1013.2 L328.8,1014.9 L337.3,1016.2 L342.0,1018.4 L340.8,1025.3 L352.2,1025.3 L352.8,1031.3 L358.6,1032.4 L361.2,1031.8 L366.4,1035.0 L384.4,1027.1 L411.6,1017.6 L412.3,1023.2 L410.6,1042.3 L396.2,1053.3 L390.7,1058.6 L379.1,1078.0 L383.5,1081.1 L390.0,1093.5 L392.0,1095.8 L397.5,1099.4 L401.3,1099.6 L405.2,1103.6 L406.2,1105.5 L406.3,1110.1 L413.9,1114.5 L415.6,1114.8 L417.2,1113.0 L417.8,1118.4 L423.2,1127.2 L427.3,1122.1 L426.7,1125.0 L431.4,1135.3 L432.9,1147.9 L432.6,1151.4 L431.0,1153.2 L419.6,1159.2 L416.2,1159.9 L403.7,1156.7 L399.6,1162.0 L402.7,1172.3 L403.7,1188.0 L405.3,1191.4 L405.4,1194.2 L396.8,1205.7 L394.2,1207.2 L391.1,1206.2 L376.9,1209.7 L375.1,1204.9 L374.8,1200.7 L372.6,1195.8 L367.2,1192.0 L355.1,1177.7Z",
-            label: [328.1, 1107.9],
-            n_dong: 23,
-          },
-          달성군: {
-            d: "M330.1,1336.6 L334.6,1342.2 L339.3,1354.0 L339.4,1360.6 L337.7,1372.7 L344.0,1378.5 L337.5,1391.5 L338.3,1401.3 L341.1,1404.1 L328.9,1403.4 L323.0,1405.1 L315.8,1409.6 L312.8,1415.9 L310.5,1417.6 L300.2,1419.7 L296.3,1422.5 L295.9,1425.5 L297.9,1428.1 L299.2,1432.1 L297.3,1443.7 L294.9,1472.4 L299.0,1476.4 L301.5,1480.0 L301.7,1481.9 L300.2,1487.7 L293.9,1495.0 L288.1,1496.9 L279.3,1496.3 L274.3,1498.7 L256.8,1503.8 L253.4,1503.2 L249.6,1495.1 L246.6,1493.4 L244.4,1493.2 L239.6,1495.5 L230.8,1501.9 L225.9,1501.9 L222.9,1500.2 L219.8,1498.1 L215.8,1492.8 L209.2,1494.9 L204.7,1500.1 L190.5,1497.6 L175.6,1512.7 L165.2,1529.2 L159.4,1530.6 L156.0,1529.3 L151.7,1531.9 L150.7,1535.9 L149.1,1536.6 L143.8,1536.1 L141.1,1533.4 L138.2,1533.3 L136.0,1536.5 L136.7,1537.5 L136.4,1539.3 L132.7,1544.0 L129.0,1546.9 L121.2,1548.3 L118.5,1546.0 L108.9,1545.6 L100.2,1549.8 L88.8,1558.0 L82.6,1558.7 L81.2,1562.5 L78.4,1565.2 L70.6,1564.9 L62.8,1561.5 L60.9,1559.1 L59.3,1555.8 L69.1,1557.1 L77.1,1556.2 L84.7,1553.8 L89.1,1549.8 L90.9,1546.5 L93.8,1536.7 L97.5,1529.4 L103.6,1519.7 L112.9,1511.1 L114.2,1506.3 L115.0,1490.0 L114.1,1486.8 L111.3,1483.6 L103.5,1476.7 L95.5,1473.5 L76.4,1459.8 L49.5,1431.1 L41.9,1421.1 L30.8,1401.9 L24.0,1375.2 L25.2,1359.5 L27.8,1355.2 L34.2,1350.6 L40.1,1349.7 L70.1,1361.5 L78.8,1363.8 L91.2,1363.7 L103.5,1371.2 L128.5,1378.6 L138.7,1380.6 L143.2,1379.9 L148.8,1376.4 L166.8,1359.9 L169.5,1355.4 L170.5,1345.5 L168.7,1322.5 L166.9,1313.1 L162.4,1305.6 L143.8,1293.2 L138.6,1287.3 L134.1,1285.1 L119.1,1281.7 L106.1,1272.9 L97.2,1268.3 L89.9,1257.4 L85.7,1248.0 L84.3,1241.9 L84.6,1235.0 L86.9,1229.3 L99.6,1212.8 L108.4,1198.8 L123.4,1157.9 L145.8,1131.1 L157.9,1131.0 L179.0,1133.6 L190.6,1133.7 L201.2,1131.7 L228.2,1133.9 L233.0,1132.6 L241.6,1126.6 L245.3,1122.3 L249.2,1113.8 L263.3,1114.4 L269.9,1117.2 L275.4,1115.0 L283.3,1116.4 L292.4,1120.6 L298.6,1125.6 L305.5,1128.3 L306.5,1130.5 L297.9,1135.0 L296.7,1138.6 L303.1,1140.6 L307.2,1143.2 L311.3,1153.6 L313.4,1156.3 L326.8,1168.0 L330.0,1168.7 L331.9,1177.3 L340.3,1180.6 L348.4,1180.7 L355.1,1177.7 L367.2,1192.0 L372.6,1195.8 L374.8,1200.7 L375.1,1204.9 L376.9,1209.7 L387.0,1206.8 L391.1,1206.2 L394.2,1207.2 L395.8,1206.3 L405.4,1194.2 L405.3,1191.4 L403.7,1188.0 L402.7,1172.3 L399.6,1162.0 L403.7,1156.7 L416.2,1159.9 L419.6,1159.2 L431.0,1153.2 L432.8,1150.0 L431.4,1135.3 L435.5,1134.6 L440.2,1130.8 L446.8,1135.4 L471.0,1140.9 L484.2,1142.8 L495.0,1140.6 L499.4,1135.2 L510.3,1138.3 L517.5,1138.4 L521.9,1141.0 L526.3,1147.0 L535.8,1146.8 L541.4,1144.2 L544.4,1145.6 L546.6,1150.5 L548.3,1152.3 L558.3,1155.0 L563.7,1154.2 L571.5,1156.4 L581.3,1160.7 L585.9,1161.2 L597.4,1171.3 L599.3,1173.4 L597.2,1180.5 L597.9,1187.1 L603.0,1196.5 L606.2,1198.0 L607.1,1202.0 L607.3,1207.4 L605.5,1210.8 L605.6,1217.2 L606.9,1217.9 L609.9,1217.2 L615.4,1226.2 L614.5,1231.5 L616.5,1237.5 L622.9,1244.6 L616.7,1263.0 L617.3,1266.7 L619.8,1271.8 L615.4,1277.6 L611.3,1280.4 L609.9,1285.4 L614.1,1289.4 L615.3,1296.5 L612.4,1301.8 L605.0,1306.1 L600.1,1311.1 L600.5,1319.7 L584.2,1320.4 L580.9,1321.3 L578.8,1325.2 L566.7,1321.7 L562.3,1322.8 L557.0,1326.1 L551.2,1334.0 L543.6,1339.7 L536.4,1347.7 L526.0,1352.2 L521.6,1353.2 L509.9,1350.7 L499.7,1357.2 L495.3,1358.3 L488.4,1353.2 L480.8,1343.6 L480.6,1335.2 L485.8,1330.2 L486.1,1327.5 L482.7,1319.6 L480.7,1317.5 L478.8,1316.9 L474.0,1310.8 L474.4,1308.7 L476.8,1305.9 L483.0,1300.6 L481.4,1295.1 L482.7,1292.2 L485.1,1291.7 L485.2,1286.3 L471.6,1282.1 L467.7,1282.4 L460.1,1286.3 L456.3,1287.2 L449.7,1286.4 L445.6,1289.1 L442.1,1295.3 L438.0,1297.6 L432.4,1292.5 L424.7,1282.6 L421.7,1282.1 L405.9,1292.4 L400.1,1290.4 L397.7,1287.7 L394.5,1288.1 L392.5,1290.4 L391.5,1297.0 L388.3,1302.7 L386.1,1304.4 L373.9,1309.7 L367.1,1314.7 L362.9,1318.1 L359.1,1324.8 L351.7,1327.0 L333.2,1336.0 L330.1,1336.6ZM296.7,953.4 L304.3,952.5 L307.6,953.2 L324.5,959.1 L328.1,961.5 L328.4,963.9 L327.1,965.2 L319.3,966.9 L313.1,972.6 L313.0,974.6 L318.4,984.7 L319.4,989.1 L319.9,995.2 L318.3,1000.2 L316.3,1002.9 L310.2,1006.0 L301.6,1005.3 L296.3,1010.1 L289.8,1010.8 L285.4,1015.2 L274.0,1012.6 L264.3,1008.7 L260.8,1006.1 L252.5,1006.7 L250.5,1008.1 L247.8,1011.2 L245.3,1017.7 L243.4,1019.3 L238.1,1019.9 L236.4,1024.4 L232.5,1058.0 L232.3,1081.1 L214.1,1063.5 L207.5,1059.7 L149.4,1042.1 L140.6,1041.6 L126.4,1044.1 L113.5,1044.1 L106.1,1046.0 L94.6,1044.7 L92.8,1044.0 L90.5,1039.0 L86.8,1026.5 L84.8,1012.5 L87.9,998.8 L93.6,988.1 L99.1,974.1 L106.9,971.4 L110.2,965.9 L114.3,963.1 L115.7,961.1 L121.4,948.1 L121.7,939.6 L124.1,932.3 L128.1,923.4 L130.5,919.4 L132.5,918.0 L140.6,903.2 L141.3,892.3 L150.7,889.0 L152.7,884.5 L152.1,881.2 L153.1,878.0 L157.6,879.3 L158.0,876.0 L164.4,871.5 L174.1,870.1 L181.2,863.3 L188.8,861.9 L195.1,862.9 L200.8,860.7 L202.4,854.6 L203.1,845.5 L207.4,848.1 L209.5,847.9 L211.2,851.9 L217.0,856.5 L218.3,856.9 L220.2,854.8 L229.0,855.5 L241.0,860.7 L242.0,864.2 L242.1,874.9 L240.7,880.9 L238.6,883.1 L236.8,888.6 L238.0,901.9 L236.6,905.6 L229.6,914.9 L228.2,915.2 L225.7,922.4 L227.9,935.1 L227.6,938.2 L231.7,941.2 L233.9,944.1 L240.0,948.1 L245.5,942.5 L248.7,943.2 L250.3,945.9 L255.8,949.0 L256.2,946.0 L262.1,942.1 L266.7,942.6 L270.6,946.0 L270.6,948.8 L273.8,956.4 L277.3,960.5 L282.7,962.4 L285.7,967.7 L291.0,960.5 L290.3,957.9 L296.7,953.4Z",
-            label: [250.6, 1338.2],
-            n_dong: 9,
-          },
-          군위군: {
-            d: "M626.3,652.9 L629.6,655.6 L631.3,664.9 L628.1,677.0 L621.3,688.9 L616.4,689.9 L613.6,692.4 L607.5,693.4 L601.1,692.4 L589.1,693.9 L573.9,693.5 L571.8,694.8 L570.1,698.5 L567.9,701.0 L551.7,703.0 L544.9,707.5 L533.0,701.2 L529.3,701.9 L526.6,701.2 L523.8,696.0 L520.8,687.2 L500.7,676.6 L495.3,672.4 L493.2,668.5 L494.2,664.7 L494.2,656.0 L496.2,644.4 L502.0,633.4 L507.2,613.6 L507.2,604.4 L504.4,589.6 L504.4,577.9 L509.1,559.9 L508.8,558.1 L503.7,553.4 L498.1,549.1 L494.9,554.3 L486.5,556.3 L481.2,554.7 L477.3,556.3 L473.6,560.8 L462.7,559.9 L452.6,561.7 L447.9,566.9 L438.2,572.4 L431.1,573.8 L422.1,578.3 L420.9,581.5 L418.1,585.2 L405.5,593.8 L403.1,594.2 L396.6,577.5 L392.9,572.2 L393.0,568.4 L397.2,555.4 L399.2,544.1 L401.6,537.1 L402.2,531.7 L399.6,521.0 L400.1,518.7 L395.8,512.5 L393.1,505.1 L394.9,500.2 L395.4,488.7 L394.6,486.0 L392.4,484.4 L394.4,477.7 L390.4,468.5 L386.8,467.0 L384.1,468.5 L378.3,464.3 L374.3,456.1 L375.4,451.6 L374.9,449.5 L367.3,443.4 L372.6,434.3 L374.2,427.5 L366.5,422.2 L368.2,412.2 L366.8,407.4 L370.5,401.3 L361.3,396.7 L356.7,392.6 L353.2,378.2 L360.1,368.3 L366.1,372.1 L375.6,370.7 L376.8,365.1 L377.2,352.6 L380.7,347.8 L382.6,342.8 L368.1,342.6 L362.6,335.0 L361.7,331.4 L358.0,323.9 L350.9,314.2 L351.5,312.2 L350.6,309.4 L345.3,305.5 L324.7,294.2 L314.7,294.6 L311.8,295.7 L310.3,298.9 L310.6,301.2 L309.7,304.4 L304.9,314.7 L297.1,325.2 L290.7,328.0 L288.9,324.5 L288.1,319.0 L289.4,311.4 L280.2,304.7 L276.9,304.9 L274.0,300.7 L274.7,293.4 L273.6,284.6 L269.3,273.8 L263.1,265.7 L263.3,261.2 L265.1,255.9 L264.3,253.7 L259.3,244.7 L253.9,245.1 L247.7,243.4 L248.2,240.5 L253.3,237.3 L258.7,230.0 L257.5,222.9 L248.6,224.7 L245.1,223.1 L241.9,226.3 L241.4,228.8 L238.2,230.8 L231.6,233.1 L225.5,232.6 L217.5,234.9 L204.3,243.0 L201.6,245.9 L180.6,257.3 L175.1,248.2 L176.2,238.9 L174.9,235.1 L172.3,233.3 L169.8,229.4 L168.1,220.6 L163.1,218.7 L151.2,217.4 L150.5,213.6 L151.1,209.5 L148.1,205.1 L144.7,203.1 L143.5,199.0 L144.7,192.9 L147.0,187.6 L143.4,178.5 L141.0,176.8 L138.6,172.7 L143.6,169.8 L146.2,166.5 L146.3,153.0 L147.2,149.0 L148.5,146.3 L152.9,142.7 L155.9,138.2 L156.7,132.9 L155.1,130.1 L151.9,127.3 L134.0,117.9 L129.4,108.6 L134.3,103.5 L134.5,101.2 L132.8,98.2 L132.5,95.3 L136.5,87.6 L140.3,83.6 L144.4,83.8 L146.5,85.1 L158.0,83.7 L164.7,78.4 L166.2,72.3 L169.1,69.8 L171.6,69.8 L173.4,72.1 L175.1,72.4 L177.3,69.2 L177.9,55.7 L175.9,51.9 L179.9,48.4 L183.2,47.5 L188.3,42.7 L188.9,39.7 L199.2,24.2 L204.7,24.2 L206.2,24.7 L207.0,28.2 L225.8,34.9 L233.2,39.0 L236.3,42.7 L237.2,45.4 L236.7,55.9 L237.7,56.6 L246.7,58.0 L251.9,61.8 L261.6,64.3 L271.2,71.3 L276.7,74.1 L279.4,74.7 L286.3,73.6 L293.9,74.6 L298.1,76.2 L302.0,80.5 L309.2,77.6 L314.0,77.6 L317.6,81.6 L323.7,83.0 L326.0,81.9 L327.4,83.0 L333.8,95.0 L342.3,92.5 L345.7,92.6 L350.2,93.8 L362.0,99.8 L361.9,102.7 L366.0,106.1 L369.0,115.9 L370.5,127.8 L373.0,135.6 L375.5,137.8 L381.6,138.3 L392.1,131.4 L398.7,137.1 L405.0,136.0 L406.8,135.4 L410.6,131.7 L411.5,128.4 L414.5,125.5 L422.6,125.8 L439.4,130.9 L444.4,131.0 L446.9,129.9 L450.1,133.4 L452.3,140.1 L452.1,142.7 L455.6,145.1 L462.9,146.3 L468.3,143.4 L472.8,143.6 L479.4,146.5 L485.5,151.0 L490.4,150.6 L497.9,153.0 L512.6,163.2 L519.3,164.9 L522.2,169.5 L526.7,172.3 L526.2,180.0 L522.6,195.0 L513.2,201.5 L510.1,212.9 L513.6,213.5 L516.1,216.0 L519.8,225.1 L520.2,232.2 L518.5,239.2 L518.1,250.3 L516.7,255.4 L511.7,258.8 L511.3,261.1 L515.0,275.8 L516.4,276.4 L525.4,278.5 L528.1,274.5 L529.7,270.0 L541.8,258.0 L547.7,259.1 L552.9,256.3 L553.2,254.1 L566.1,250.0 L567.9,251.0 L568.5,254.9 L572.0,263.0 L573.2,270.5 L576.4,276.2 L579.7,277.4 L582.4,277.9 L582.3,274.6 L584.2,270.5 L585.9,269.1 L597.8,263.9 L599.6,263.6 L608.6,266.6 L615.9,267.2 L619.8,265.7 L623.4,269.0 L629.2,277.1 L623.6,285.7 L623.7,290.7 L638.0,297.6 L645.2,298.9 L653.4,295.7 L659.2,295.1 L662.3,295.7 L663.2,300.0 L666.4,300.1 L672.4,297.5 L677.3,294.1 L681.3,299.2 L685.6,298.1 L690.4,294.4 L701.8,298.8 L709.2,307.8 L715.1,304.6 L716.6,300.8 L715.8,298.7 L720.8,290.1 L730.1,290.4 L731.5,294.9 L743.7,303.1 L750.6,309.8 L754.8,307.1 L757.5,306.6 L774.1,308.9 L779.2,303.7 L788.2,308.0 L795.7,309.1 L802.1,302.6 L807.9,294.5 L809.8,274.1 L822.4,274.0 L825.9,273.0 L841.8,262.0 L854.7,258.1 L857.7,259.5 L859.1,261.8 L861.6,263.0 L869.4,261.8 L875.1,258.2 L880.1,261.0 L884.5,260.2 L892.5,264.0 L907.6,282.1 L909.6,281.5 L913.3,282.4 L921.2,287.8 L925.0,287.9 L929.3,296.4 L938.5,298.5 L945.5,298.0 L944.3,312.9 L943.3,317.0 L947.1,326.0 L950.3,330.2 L959.5,334.8 L961.0,338.6 L960.5,346.7 L964.3,350.6 L969.0,352.7 L967.5,354.5 L965.8,361.5 L976.0,376.0 L971.1,380.9 L968.9,381.6 L962.9,391.0 L958.8,409.0 L961.1,417.0 L956.7,418.6 L953.4,418.6 L950.4,417.2 L935.0,419.2 L923.7,415.3 L921.1,413.2 L912.2,414.0 L904.7,413.1 L898.8,422.5 L891.1,427.5 L890.3,429.4 L890.1,435.2 L893.0,441.2 L894.6,449.0 L891.4,460.5 L891.9,464.6 L889.6,469.4 L886.2,472.4 L881.2,473.3 L878.6,478.1 L868.2,482.3 L866.6,488.0 L866.5,493.4 L865.4,495.8 L863.4,498.2 L858.5,499.2 L856.1,504.2 L854.0,504.1 L850.3,506.9 L841.2,508.7 L835.3,513.7 L834.0,515.8 L831.0,526.3 L825.8,527.7 L821.1,533.6 L800.0,542.0 L798.3,539.4 L795.1,537.8 L787.1,538.2 L776.9,529.2 L767.3,523.0 L762.5,520.9 L751.8,520.0 L749.3,515.6 L748.0,510.8 L742.0,508.5 L730.7,516.7 L728.7,519.6 L727.9,522.7 L722.5,527.5 L719.6,525.0 L718.8,511.7 L718.9,506.7 L719.6,505.2 L719.1,502.3 L717.2,501.8 L710.8,495.2 L707.6,490.2 L707.2,496.6 L705.6,503.7 L701.7,508.7 L687.9,521.3 L673.1,530.4 L672.2,534.5 L673.5,537.5 L677.4,538.7 L680.4,550.3 L672.4,564.8 L670.5,566.5 L666.9,567.2 L665.6,565.6 L653.9,562.0 L649.2,566.2 L644.9,580.2 L645.4,586.6 L642.0,593.8 L636.2,599.2 L633.9,604.7 L637.4,616.4 L637.6,626.1 L635.7,632.2 L632.1,638.1 L624.0,648.1 L626.3,652.9Z",
-            label: [673.0, 366.7],
-            n_dong: 8,
-          },
-        },
+        완전공백: "#8B0000",
+        이중취약: "#FF4500",
+        물리적부족: "#FFA500",
+        질적미스매치: "#4169E1",
+        양호: "#2E8B57",
+        판정불가: "#A9A9A9",
       };
 
-      const DONG_SHAPES = {
-        "중구|삼덕동": {
-          d: "M345747,-364310L344453,-364615L344432,-364542L344088,-364613L344081,-364478L344285,-364410L344258,-364281L344401,-364145L345378,-363904L345662,-364139L345747,-364310Z",
-          c: [344925, -364273],
-        },
-        "중구|성내1동": {
-          d: "M344620,-365315L344182,-365407L344168,-365353L344042,-365382L344014,-365327L343901,-364296L344010,-364274L344177,-363747L344265,-363661L344593,-363748L344461,-364104L344258,-364281L344285,-364410L344081,-364478L344088,-364613L344432,-364542L344491,-364605L344620,-365315Z",
-          c: [344252, -364625],
-        },
-        "중구|성내2동": {
-          d: "M344042,-365382L344007,-365465L343434,-365594L343354,-364813L343135,-364865L342888,-364794L342919,-364208L343393,-364399L343901,-364296L344042,-365382Z",
-          c: [343535, -364851],
-        },
-        "중구|성내3동": {
-          d: "M343436,-365615L342475,-365835L342501,-365503L342607,-365370L342388,-365452L342293,-365110L342402,-364977L342591,-365032L342684,-365192L342853,-365162L342897,-364841L343354,-364813L343436,-365615Z",
-          c: [342917, -365322],
-        },
-        "중구|대신동": {
-          d: "M342919,-364208L342884,-365145L342684,-365192L342617,-364717L342144,-364251L342185,-363945L342919,-364208Z",
-          c: [342609, -364473],
-        },
-        "중구|남산1동": {
-          d: "M344242,-363592L344010,-364274L343918,-364293L343860,-363825L343650,-363905L343426,-363316L343684,-363376L344047,-363304L343987,-363511L344125,-363555L344149,-363504L344159,-363508L344144,-363559L344242,-363592Z",
-          c: [343867, -363694],
-        },
-        "중구|남산2동": {
-          d: "M343901,-364296L343372,-364392L342920,-364209L342937,-363912L343093,-363893L343152,-363987L343311,-364056L343860,-363825L343901,-364296Z",
-          c: [343439, -364135],
-        },
-        "중구|남산3동": {
-          d: "M343650,-363905L343311,-364056L343152,-363987L343093,-363893L342937,-363912L342980,-363261L343426,-363316L343650,-363905Z",
-          c: [343257, -363660],
-        },
-        "중구|남산4동": {
-          d: "M342920,-364209L342185,-363945L342214,-363663L342980,-363261L342920,-364209Z",
-          c: [342643, -363765],
-        },
-        "중구|대봉1동": {
-          d: "M345378,-363904L344468,-364119L344436,-364132L344782,-363169L345284,-363140L345259,-363643L345304,-363794L345367,-363781L345378,-363904Z",
-          c: [344936, -363632],
-        },
-        "중구|대봉2동": {
-          d: "M344782,-363169L344593,-363748L344295,-363659L344182,-363684L344242,-363592L344144,-363559L344159,-363508L344125,-363555L343987,-363511L344047,-363304L344237,-363280L344357,-363193L344782,-363169Z",
-          c: [344409, -363431],
-        },
-        "중구|동인동": {
-          d: "M345832,-364617L345574,-365309L345455,-365370L344931,-365229L344622,-365319L344491,-364605L345747,-364310L345832,-364617Z",
-          c: [345184, -364848],
-        },
-        "동구|신암1동": {
-          d: "M346568,-366293L346529,-366434L346573,-366528L346433,-366956L346261,-367156L346040,-366971L345856,-366537L345737,-366463L345547,-366142L345779,-366063L346568,-366293Z",
-          c: [346133, -366531],
-        },
-        "동구|신암2동": {
-          d: "M345751,-366072L345564,-366131L345388,-365820L345090,-365582L345469,-365361L345990,-365547L345751,-366072Z",
-          c: [345580, -365700],
-        },
-        "동구|신암3동": {
-          d: "M346920,-365687L346985,-365819L346939,-365957L346627,-366310L345751,-366072L345969,-365511L346409,-365670L346920,-365687Z",
-          c: [346366, -365917],
-        },
-        "동구|신암4동": {
-          d: "M346993,-367005L346464,-367325L346261,-367156L346433,-366956L346573,-366528L346529,-366434L346568,-366292L346627,-366310L346939,-365957L346985,-365819L346920,-365687L347664,-365957L347638,-366034L347859,-366104L347462,-366587L346993,-367005Z",
-          c: [347025, -366474],
-        },
-        "동구|신암5동": {
-          d: "M348209,-366916L347582,-367191L347320,-367415L346993,-367005L347451,-366585L347872,-366671L348151,-366806L348209,-366916Z",
-          c: [347551, -366946],
-        },
-        "동구|신천1.2동": {
-          d: "M346005,-365515L345469,-365361L345624,-365278L345832,-364617L346175,-364583L346315,-364836L346005,-365515Z",
-          c: [345948, -365040],
-        },
-        "동구|신천3동": {
-          d: "M346920,-365687L346409,-365670L346005,-365515L346315,-364836L346175,-364583L346956,-364502L346802,-365365L346920,-365687Z",
-          c: [346530, -365117],
-        },
-        "동구|신천4동": {
-          d: "M347244,-365803L346920,-365687L346802,-365365L346956,-364502L347198,-364475L347586,-365036L347673,-365078L347583,-365417L347244,-365803Z",
-          c: [347192, -365161],
-        },
-        "동구|효목1동": {
-          d: "M349356,-366131L349094,-366208L348737,-366598L348631,-366682L348578,-366633L348209,-366916L348151,-366806L347872,-366671L347462,-366587L347847,-366119L348085,-366125L348296,-366007L348564,-365583L349012,-365824L349190,-365778L349481,-365569L349854,-365605L349356,-366131Z",
-          c: [348585, -366197],
-        },
-        "동구|효목2동": {
-          d: "M347673,-365078L348020,-365205L348569,-365611L348390,-365910L348196,-366081L347911,-366142L347638,-366034L347664,-365957L347244,-365803L347583,-365417L347673,-365078Z",
-          c: [347928, -365657],
-        },
-        "동구|도평동": {
-          d: "M356993,-372506L356785,-372507L356646,-372616L356461,-372604L355789,-372793L355378,-372764L354902,-372978L354636,-372941L354315,-373029L354309,-373098L354085,-373039L353898,-373146L353439,-372986L353215,-373098L352955,-373401L352672,-373389L352533,-373287L352129,-373278L352093,-373408L351863,-373549L351493,-373317L350913,-373255L350761,-373089L350621,-373151L350528,-373037L350586,-372996L350297,-372703L350054,-371900L349872,-371986L349829,-371926L349848,-371492L349525,-371286L349432,-371290L349397,-371214L349460,-371154L349423,-370975L349505,-370621L349482,-370410L349355,-370260L349262,-370290L349058,-370223L349078,-369986L348997,-369812L348931,-369830L348945,-369756L348718,-369672L348584,-369425L348514,-369401L348519,-369314L348304,-369272L348287,-369221L348693,-369161L348999,-369217L349228,-369140L349163,-369049L349382,-369060L349447,-369179L349600,-369072L349661,-369099L349698,-368915L349574,-368854L349514,-368617L349731,-368553L349690,-368488L349741,-368313L349993,-368149L349843,-368021L349789,-367792L349604,-367625L349825,-367608L349890,-367278L349777,-367187L349786,-367078L349730,-367073L349774,-366873L350075,-367072L350215,-367347L350615,-367513L350853,-367734L350782,-368178L350700,-368253L350788,-368409L350690,-368826L350820,-369106L350752,-369400L350843,-369657L351132,-369697L351418,-370080L351792,-370250L352150,-370529L352445,-370419L352987,-370442L353187,-370396L353377,-370255L353494,-369947L353625,-369922L353720,-369811L354004,-370076L354014,-370276L354206,-370328L354501,-370703L354871,-370810L354909,-370889L355069,-370952L355052,-371105L355210,-371395L355166,-371470L355279,-371546L355464,-371528L355717,-371634L355999,-371555L356421,-371667L356561,-371586L356824,-371625L356887,-371799L356849,-372132L357091,-372440L356993,-372506Z",
-          c: [352238, -371196],
-        },
-        "동구|불로.봉무동": {
-          d: "M349872,-371986L349289,-372394L348923,-372400L348773,-372551L348689,-372499L348708,-372413L348626,-372383L348234,-372440L348146,-372103L348078,-372017L347824,-371917L347232,-372187L346915,-372110L346664,-372129L346941,-371714L346972,-371537L346881,-371460L347030,-371462L347242,-371189L347332,-370461L347340,-369558L346974,-368994L346882,-368724L346976,-368202L347370,-368298L347610,-368173L348078,-368929L348438,-368913L349059,-369179L348973,-369220L348533,-369166L348286,-369225L348519,-369314L348514,-369401L348584,-369425L348718,-369672L348945,-369756L348931,-369830L348997,-369812L349078,-369986L349058,-370223L349262,-370290L349355,-370260L349482,-370410L349505,-370621L349423,-370975L349460,-371154L349397,-371214L349432,-371290L349525,-371286L349848,-371492L349801,-371719L349872,-371986Z",
-          c: [348218, -370634],
-        },
-        "동구|지저동": {
-          d: "M348686,-368509L349228,-369140L349059,-369179L348438,-368913L348084,-368932L347610,-368173L347370,-368298L346976,-368202L347067,-367876L347327,-367517L347320,-367415L347582,-367191L348209,-366916L348555,-367675L348637,-367704L348694,-367927L348620,-367941L348714,-368162L348653,-368389L348686,-368509Z",
-          c: [348053, -368025],
-        },
-        "동구|동촌동": {
-          d: "M350075,-367072L349765,-366883L349730,-367073L349786,-367078L349777,-367187L349890,-367278L349825,-367608L349604,-367625L349789,-367792L349843,-368021L349993,-368149L349741,-368313L349690,-368488L349731,-368553L349514,-368617L349574,-368854L349698,-368915L349698,-368992L349661,-369099L349600,-369072L349447,-369179L349382,-369060L349163,-369049L348688,-368512L348653,-368389L348714,-368162L348620,-367941L348694,-367927L348637,-367704L348555,-367675L348209,-366916L348578,-366633L348631,-366682L348737,-366598L349094,-366208L349356,-366131L349396,-366232L349508,-366262L349568,-366426L349735,-366400L349794,-366488L349970,-366511L350071,-366747L350075,-367072Z",
-          c: [349206, -367531],
-        },
-        "동구|방촌동": {
-          d: "M351268,-365762L351233,-365822L350616,-366035L349953,-366367L349568,-366426L349508,-366262L349396,-366232L349356,-366131L349857,-365648L349989,-365413L350365,-365215L350584,-365174L351082,-365271L351268,-365762Z",
-          c: [350336, -365773],
-        },
-        "동구|해안동": {
-          d: "M353747,-369729L353625,-369922L353494,-369947L353377,-370255L353187,-370396L352987,-370442L352445,-370419L352150,-370529L351792,-370250L351418,-370080L351132,-369697L350843,-369657L350752,-369400L350820,-369106L350690,-368826L350788,-368409L350700,-368253L350782,-368178L350853,-367734L350717,-367576L350347,-367441L350169,-367295L350067,-367101L350071,-366747L349970,-366512L349794,-366488L349735,-366400L350050,-366337L350616,-366035L351233,-365822L351268,-365762L352134,-365802L352162,-366062L352377,-366361L352601,-366339L352571,-366268L352697,-366054L352859,-366171L353058,-366089L353426,-366114L353321,-366798L353596,-367120L353577,-367255L353642,-367305L353552,-367671L353363,-367912L353668,-368140L353928,-368497L353965,-368667L354121,-368825L354237,-369255L354026,-369606L353747,-369729Z",
-          c: [352129, -368083],
-        },
-        "동구|공산동": {
-          d: "M355317,-380098L354880,-380312L354501,-380328L354336,-380417L353389,-380588L352971,-380838L352967,-380996L352857,-381169L352387,-381093L352093,-380929L351461,-380995L351227,-380816L350512,-380806L350261,-380677L350149,-380494L349137,-380360L349040,-380204L348854,-380116L348281,-380458L347933,-380463L347853,-380351L347393,-380283L347012,-380065L346607,-380139L346459,-380115L346384,-379974L346230,-379931L345832,-380003L345683,-379361L345398,-379169L345315,-378987L345180,-378883L345059,-378531L344869,-378360L344593,-377901L344856,-377807L345382,-377396L345645,-376983L345659,-376823L346017,-376648L346096,-376456L345972,-375991L346163,-375829L346270,-375598L346400,-375486L346429,-375433L346333,-375203L346369,-375065L346609,-374905L346753,-374623L346743,-374448L346542,-374231L346574,-374070L346470,-373969L346451,-373542L346470,-373292L346630,-373292L346766,-373206L346779,-372556L346634,-372421L346664,-372129L346915,-372110L347232,-372187L347824,-371917L348078,-372017L348146,-372103L348234,-372440L348626,-372383L348708,-372413L348689,-372499L348773,-372551L348923,-372400L349289,-372394L350054,-371900L350297,-372703L350586,-372996L350528,-373037L350621,-373151L350761,-373089L350913,-373255L351493,-373317L351842,-373550L352093,-373408L352129,-373278L352533,-373287L352672,-373389L352955,-373401L353215,-373098L353439,-372986L353898,-373146L354085,-373039L354309,-373098L354315,-373029L354636,-372941L354902,-372978L355378,-372764L355789,-372793L356986,-372498L357372,-373233L357320,-373547L357198,-373655L357212,-373856L357073,-374078L357045,-374264L356965,-374428L356796,-374553L356878,-374698L357242,-375005L357274,-375540L357347,-375748L357493,-375860L357440,-376038L357506,-376444L357425,-376572L356832,-376869L356632,-377348L356225,-377630L356107,-377806L356155,-378253L356442,-378655L356327,-378761L356380,-378838L356164,-379158L355833,-379244L355863,-379507L355789,-379673L355655,-379829L355506,-379869L355317,-380098Z",
-          c: [351267, -376597],
-        },
-        "동구|안심1동": {
-          d: "M354377,-365227L353273,-365349L353349,-365428L353275,-365464L353117,-365257L352758,-365014L352292,-364898L352330,-364741L351727,-364557L351747,-364052L351927,-363858L351987,-363908L352295,-363709L352533,-363772L352807,-363700L353360,-363700L353489,-363603L353899,-363584L353993,-363888L354127,-364034L354152,-364295L354267,-364460L354267,-365000L354341,-365046L354377,-365227Z",
-          c: [353142, -364443],
-        },
-        "동구|안심2동": {
-          d: "M356735,-371624L356561,-371586L356421,-371667L355999,-371555L355717,-371634L355464,-371528L355279,-371546L355166,-371470L355210,-371395L355052,-371105L355069,-370952L354909,-370889L354871,-370810L354513,-370712L354336,-370462L354231,-370424L354206,-370328L354014,-370276L354004,-370076L353720,-369811L353747,-369729L354026,-369606L354237,-369255L354121,-368825L353965,-368667L353928,-368497L353668,-368140L353363,-367912L353552,-367671L353642,-367305L353577,-367255L353596,-367120L353321,-366798L353426,-366114L353058,-366089L352859,-366171L352697,-366054L352571,-366268L352601,-366339L352377,-366361L352162,-366062L352134,-365802L351238,-365768L351100,-365338L351343,-365285L351727,-364557L352330,-364741L352292,-364898L352758,-365014L353117,-365257L353275,-365464L353349,-365428L353273,-365349L354416,-365224L354606,-365267L354611,-365319L354447,-365364L354447,-365610L354270,-365613L354232,-365873L354525,-365789L354541,-365955L354421,-365972L354329,-366077L354219,-366718L354150,-366816L354339,-367517L354423,-367556L354372,-367503L354427,-367454L354630,-367547L354877,-368178L355085,-368378L355528,-368332L355871,-368680L356493,-368893L357059,-369499L357023,-369606L357144,-370020L357233,-370053L357365,-370367L357278,-370731L357048,-371196L356735,-371624Z",
-          c: [354687, -368509],
-        },
-        "동구|안심3동": {
-          d: "M358945,-364615L358920,-364933L358751,-365050L358898,-365187L358909,-365383L359053,-365522L359041,-365582L357850,-365062L357496,-365133L356978,-365452L356657,-365543L356480,-365101L355179,-364535L354769,-364497L354966,-364006L355734,-363877L355966,-363539L356594,-363048L356736,-362951L356957,-362924L357259,-363052L357673,-363459L358145,-363650L358526,-364330L358945,-364615Z",
-          c: [357032, -364306],
-        },
-        "동구|안심4동": {
-          d: "M354966,-364006L354771,-364533L355179,-364535L356480,-365101L356657,-365543L354520,-365746L354525,-365789L354233,-365880L354270,-365613L354447,-365610L354447,-365364L354610,-365278L354354,-365211L354341,-365046L354267,-365000L354267,-364460L354152,-364295L354127,-364034L353993,-363888L353899,-363584L354237,-363662L354587,-363954L354966,-364006Z",
-          c: [355100, -364953],
-        },
-        "동구|혁신동": {
-          d: "M359041,-365582L358828,-365738L358720,-365709L358663,-365915L358824,-365998L359019,-366552L359035,-367033L359162,-367108L358934,-367366L358656,-368108L358592,-368893L358696,-369046L358864,-369138L358441,-370038L358158,-370225L357558,-370422L357306,-370603L357365,-370367L357233,-370053L357144,-370020L357023,-369606L357059,-369499L356493,-368893L355871,-368680L355528,-368332L355085,-368378L354877,-368178L354630,-367547L354427,-367454L354372,-367503L354423,-367556L354339,-367517L354150,-366816L354219,-366718L354329,-366077L354421,-365972L354541,-365955L354520,-365746L356787,-365521L357496,-365133L357735,-365063L358142,-365154L359041,-365582Z",
-          c: [356931, -367388],
-        },
-        "서구|내당1동": {
-          d: "M341613,-363750L341553,-364056L341461,-364038L341402,-364328L340557,-364019L340677,-363391L341613,-363750Z",
-          c: [341064, -363864],
-        },
-        "서구|내당2.3동": {
-          d: "M342185,-363945L342144,-364251L342593,-364684L342662,-364809L342587,-364853L342408,-364650L342295,-364662L342096,-364502L341402,-364328L341461,-364038L341553,-364056L341613,-363750L342185,-363945Z",
-          c: [341931, -364232],
-        },
-        "서구|내당4동": {
-          d: "M339843,-362985L340677,-363391L340557,-364019L339923,-363893L339431,-363612L339566,-363177L339781,-363231L339843,-362985Z",
-          c: [340082, -363532],
-        },
-        "서구|비산1동": {
-          d: "M342010,-366187L341799,-366351L341539,-366350L340672,-366006L340930,-365897L341619,-365905L341606,-365810L341906,-365827L342010,-366187Z",
-          c: [341471, -366075],
-        },
-        "서구|비산2.3동": {
-          d: "M342476,-365833L342287,-365909L342012,-366186L341898,-365768L341892,-365018L342374,-364979L342662,-364809L342638,-365083L342402,-364977L342293,-365110L342388,-365452L342607,-365370L342501,-365503L342476,-365833Z",
-          c: [342183, -365489],
-        },
-        "서구|비산4동": {
-          d: "M342587,-364853L342222,-365005L341590,-364979L341674,-364599L341617,-364389L342202,-364550L342295,-364662L342454,-364683L342587,-364853Z",
-          c: [342012, -364752],
-        },
-        "서구|비산5동": {
-          d: "M341626,-366838L341125,-366920L341420,-366328L341787,-366354L342010,-366187L342082,-366410L341626,-366838Z",
-          c: [341603, -366572],
-        },
-        "서구|비산6동": {
-          d: "M341892,-365018L341906,-365827L341606,-365810L341624,-365599L341516,-365397L341534,-364988L341892,-365018Z",
-          c: [341726, -365389],
-        },
-        "서구|비산7동": {
-          d: "M340236,-367557L340111,-367753L339124,-367326L338936,-367100L338710,-366536L338510,-366446L338452,-366236L338618,-366272L338763,-366196L340409,-366085L340459,-366070L340420,-365945L341420,-366328L341125,-366920L340345,-367088L340107,-367396L340236,-367557Z",
-          c: [339925, -366712],
-        },
-        "서구|평리1동": {
-          d: "M341149,-364958L341534,-364989L341516,-365397L341624,-365599L341619,-365905L341157,-365923L341149,-364958Z",
-          c: [341360, -365468],
-        },
-        "서구|평리2동": {
-          d: "M341590,-364979L341149,-364958L341243,-364273L341617,-364389L341674,-364599L341590,-364979Z",
-          c: [341410, -364657],
-        },
-        "서구|평리3동": {
-          d: "M341157,-365923L340930,-365897L340672,-366006L340446,-365947L340395,-365804L340433,-364787L341149,-364958L341157,-365923Z",
-          c: [340769, -365412],
-        },
-        "서구|평리4동": {
-          d: "M341243,-364273L341149,-364958L340184,-364726L340312,-363963L341243,-364273Z",
-          c: [340712, -364479],
-        },
-        "서구|평리5동": {
-          d: "M339695,-365166L339679,-364604L340433,-364787L340422,-365354L339695,-365166Z",
-          c: [340059, -364977],
-        },
-        "서구|평리6동": {
-          d: "M340395,-365804L340459,-366070L340409,-366085L339288,-366158L339276,-365961L339508,-365951L339576,-365900L339578,-365705L339725,-365714L339695,-365166L340422,-365354L340395,-365804Z",
-          c: [339964, -365733],
-        },
-        "서구|상중이동": {
-          d: "M338510,-366446L338053,-366471L337821,-366731L337684,-366518L337326,-366455L336949,-366215L336926,-366133L337268,-365500L337378,-364983L337170,-364646L337343,-364409L337719,-364374L337779,-364235L337955,-364127L337877,-363943L337979,-363771L338455,-363771L338548,-363826
+      const BLANK_REASONS = {
+        비산6동: `영유아 58명이 거주하지만 동 내 유치원·어린이집이 0곳입니다. 다만 바로 인접한
+    비산1동, 비산4동, 비산2·3동은 시설을 갖추고 있어 행정동 경계를 넘어 통원하고 있을 가능성이 높습니다.`,
+        우보면: `영유아 23명, 시설 0곳입니다. 인구 감소 농촌 지역으로 운영 채산성이 성립하기 어렵습니다.`,
+        산성면: `영유아 17명, 시설 0곳입니다. 개별 시설 운영이 현실적으로 어려운 농촌 지역입니다.`,
+        삼국유사면: `영유아 3명으로, 상시 보육 수요 자체가 거의 없는 수준입니다.`,
+      };
+
+      let map,
+        layerGroup,
+        allDong = [];
+      const daeguBounds = L.latLngBounds([35.6, 128.35], [36.3, 128.85]);
+
+      async function fetchJSON(url) {
+        const r = await fetch(url);
+        return r.json();
+      }
+
+      function initTabNavigation() {
+        const buttons = document.querySelectorAll(".tab-btn");
+        const pages = document.querySelectorAll(".tab-page");
+
+        buttons.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const targetTab = btn.dataset.tab;
+
+            buttons.forEach((b) => b.classList.remove("active"));
+            pages.forEach((p) => p.classList.remove("active"));
+
+            btn.classList.add("active");
+            const activePage = document.getElementById(targetTab);
+            if (activePage) activePage.classList.add("active");
+
+            if (
+              targetTab === "tab-dashboard" &&
+              document
+                .getElementById("dynamicMapContent")
+                .classList.contains("visible")
+            ) {
+              setTimeout(() => {
+                map.invalidateSize();
+              }, 100);
+            }
+          });
+        });
+      }
+
+      function initMap() {
+        map = L.map("map", {
+          maxBounds: daeguBounds.pad(0.05),
+          maxBoundsViscosity: 1.0,
+          minZoom: 11,
+        }).fitBounds(daeguBounds);
+
+        L.tileLayer(
+          "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+          {
+            attribution: "&copy; OpenStreetMap &copy; CARTO",
+            maxZoom: 19,
+            subdomains: "abcd",
+          },
+        ).addTo(map);
+
+        layerGroup = L.layerGroup().addTo(map);
+      }
+
+      function renderMarkers(rows) {
+        layerGroup.clearLayers();
+        rows.forEach((r) => {
+          if (r.lat == null || r.lng == null) return;
+          const color = TYPE_COLORS[r.미스매치_유형] || "#999";
+          const radius = Math.max(
+            6,
+            Math.min(22, (r.영유아인구_0_6세 || 0) / 80),
+          );
+          const cover =
+            r.전체_커버율 != null
+              ? (r.전체_커버율 * 100).toFixed(1) + "%"
+              : "-";
+          const fill =
+            r.전체_충원율 != null
+              ? (r.전체_충원율 * 100).toFixed(1) + "%"
+              : "-";
+          const price =
+            r.평균제곱미터당가격_만원 != null
+              ? Math.round(r.평균제곱미터당가격_만원).toLocaleString() +
+                "만원/㎡"
+              : "-";
+          const popup =
+            `<b>${r.시군구명} ${r.읍면동명}</b><br>` +
+            `유형: <b>${r.미스매치_유형}</b><br>` +
+            `영유아인구(0-6세): ${(r.영유아인구_0_6세 || 0).toLocaleString()}명<br>` +
+            `유치원 ${r.유치원수 || 0}곳 · 어린이집 ${r.어린이집수 || 0}곳 · 체육시설 ${r.체육시설수 || 0}곳<br>` +
+            `전체 커버율: ${cover} · 충원율: ${fill}<br>` +
+            `아파트 평균가: ${price}`;
+          L.circleMarker([r.lat, r.lng], {
+            radius,
+            fillColor: color,
+            color: "#fff",
+            weight: 1.5,
+            fillOpacity: 0.85,
+          })
+            .addTo(layerGroup)
+            .bindPopup(popup);
+        });
+      }
+
+      function populateGuFilter(rows) {
+        const sel = document.getElementById("guFilter");
+        const gus = [...new Set(rows.map((r) => r.시군구명))].sort();
+        gus.forEach((g) => {
+          const o = document.createElement("option");
+          o.value = g;
+          o.textContent = g;
+          sel.appendChild(o);
+        });
+      }
+
+      function applyFilters() {
+        const gu = document.getElementById("guFilter").value;
+        const type = document.getElementById("typeFilter").value;
+        let rows = allDong;
+        if (gu) rows = rows.filter((r) => r.시군구명 === gu);
+        if (type) rows = rows.filter((r) => r.미스매치_유형 === type);
+        renderMarkers(rows);
+      }
+
+      // 지도 전체보기 (초기화) 기능
+      function resetMapToOverall() {
+        document.getElementById("guFilter").value = "";
+        document.getElementById("typeFilter").value = "";
+        document
+          .querySelectorAll(".quad")
+          .forEach((q) => q.classList.remove("active"));
+        applyFilters();
+        map.fitBounds(daeguBounds);
+      }
+
+      function showDynamicMapContent() {
+        const container = document.getElementById("dynamicMapContent");
+        if (!container.classList.contains("visible")) {
+          container.classList.add("visible");
+          setTimeout(() => {
+            map.invalidateSize();
+          }, 100);
+        }
+      }
+
+      function highlightQuadrant(type) {
+        showDynamicMapContent();
+
+        document
+          .querySelectorAll(".quad")
+          .forEach((q) => q.classList.remove("active"));
+        const el = document.querySelector(`.quad[data-type="${type}"]`);
+        if (el) el.classList.add("active");
+
+        document.getElementById("typeFilter").value = type;
+        applyFilters();
+
+        document.getElementById("mapSection").scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+
+      // 새 창에서 지도를 독립적으로 여는 기능
+      function openMapInNewWindow() {
+        const mapWindow = window.open(
+          "",
+          "_blank",
+          "width=1100,height=750,scrollbars=yes,resizable=yes",
+        );
+        mapWindow.document.write(`
+          <!DOCTYPE html>
+          <html lang="ko">
+          <head>
+            <meta charset="UTF-8">
+            <title>대구 영유아 돌봄 인프라 지도 (전체보기)</title>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"><\/script>
+            <style>
+              body { margin: 0; padding: 16px; font-family: 'Pretendard', sans-serif; background: #f4f6f5; }
+              .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+              h2 { margin: 0; font-size: 18px; color: #14202b; }
+              #popMap { height: calc(100vh - 110px); border-radius: 6px; border: 1px solid #d9dfdd; }
+              .legend { display: flex; gap: 12px; margin-top: 10px; font-size: 12px; color: #5b6b70; }
+              .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h2>대구 영유아 돌봄 인프라 지도</h2>
+            </div>
+            <div id="popMap"></div>
+            <div class="legend">
+              <span><span class="dot" style="background:#8B0000"></span>완전공백</span>
+              <span><span class="dot" style="background:#FF4500"></span>이중취약</span>
+              <span><span class="dot" style="background:#FFA500"></span>물리적부족</span>
+              <span><span class="dot" style="background:#4169E1"></span>질적미스매치</span>
+              <span><span class="dot" style="background:#2E8B57"></span>양호</span>
+              <span><span class="dot" style="background:#A9A9A9"></span>판정불가</span>
+            </div>
+            <script>
+              const TYPE_COLORS = ${JSON.stringify(TYPE_COLORS)};
+              const rows = ${JSON.stringify(allDong)};
+              const daeguBounds = L.latLngBounds([35.6, 128.35], [36.3, 128.85]);
+
+              const popMap = L.map("popMap").fitBounds(daeguBounds);
+              L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+                attribution: "&copy; OpenStreetMap &copy; CARTO"
+              }).addTo(popMap);
+
+              rows.forEach(r => {
+                if (r.lat == null || r.lng == null) return;
+                const color = TYPE_COLORS[r.미스매치_유형] || "#999";
+                const radius = Math.max(6, Math.min(22, (r.영유아인구_0_6세 || 0) / 80));
+                const cover = r.전체_커버율 != null ? (r.전체_커버율 * 100).toFixed(1) + "%" : "-";
+                const fill = r.전체_충원율 != null ? (r.전체_충원율 * 100).toFixed(1) + "%" : "-";
+                const price = r.평균제곱미터당가격_만원 != null ? Math.round(r.평균제곱미터당가격_만원).toLocaleString() + "만원/㎡" : "-";
+                const popup = \`<b>\${r.시군구명} \${r.읍면동명}</b><br>\` +
+                              \`유형: <b>\${r.미스매치_유형}</b><br>\` +
+                              \`영유아인구(0-6세): \${(r.영유아인구_0_6세 || 0).toLocaleString()}명<br>\` +
+                              \`유치원 \${r.유치원수 || 0}곳 · 어린이집 \${r.어린이집수 || 0}곳 · 체육시설 \${r.체육시설수 || 0}곳<br>\` +
+                              \`전체 커버율: \${cover} · 충원율: \${fill}<br>\` +
+                              \`아파트 평균가: \${price}\`;
+                L.circleMarker([r.lat, r.lng], {
+                  radius, fillColor: color, color: "#fff", weight: 1.5, fillOpacity: 0.85
+                }).addTo(popMap).bindPopup(popup);
+              });
+            <\/script>
+          </body>
+          </html>
+        `);
+      }
+
+      function renderBlankDetail() {
+        const rows = allDong.filter((r) => r.미스매치_유형 === "완전공백");
+        const list = document.getElementById("blankList");
+        list.innerHTML =
+          rows
+            .map((r) => {
+              const pop = (r.영유아인구_0_6세 || 0).toLocaleString();
+              const reason =
+                BLANK_REASONS[r.읍면동명] ||
+                `영유아 ${pop}명이 거주하지만 유치원·어린이집이 단 한 곳도 없습니다.`;
+              return `<div class="blank-item">
+      <div class="loc">${r.시군구명} ${r.읍면동명} (영유아 ${pop}명)</div>
+      <div class="reason">${reason}</div>
+    </div>`;
+            })
+            .join("") || '<div class="blank-item">해당 지역 없음</div>';
+      }
+
+      function toggleBlankDetail() {
+        showDynamicMapContent();
+
+        const el = document.getElementById("blankDetail");
+        if (!el.classList.contains("show")) {
+          renderBlankDetail();
+          el.classList.add("show");
+        }
+
+        document.getElementById("typeFilter").value = "완전공백";
+        applyFilters();
+
+        document.getElementById("mapSection").scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+
+      function median(arr) {
+        const s = arr.slice().sort((a, b) => a - b);
+        const mid = Math.floor(s.length / 2);
+        return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+      }
+
+      async function loadSummary() {
+        const s = await fetchJSON("/api/summary");
+        document.getElementById("kpi-total").textContent = s.total_dong;
+        document.getElementById("kpi-blank").textContent =
+          s.mismatch_type_counts["완전공백"] || 0;
+
+        const counts = s.mismatch_type_counts;
+        ["양호", "질적미스매치", "물리적부족", "이중취약"].forEach((t) => {
+          const el = document.getElementById("cnt-" + t);
+          if (el) el.textContent = counts[t] || 0;
+        });
+
+        const validGu = s.district_summary.filter(
+          (d) => d.평균_전체커버율 != null,
+        );
+        const avgFill =
+          validGu.reduce((a, d) => a + d.평균_전체충원율, 0) / validGu.length;
+        document.getElementById("kpi-fill").textContent =
+          (avgFill * 100).toFixed(1) + "%";
+
+        const nonGunwi = allDong.filter((r) => r.시군구명 !== "군위군");
+        const covers = nonGunwi
+          .map((r) => r.전체_커버율)
+          .filter((v) => v != null);
+        const integratedCovers = nonGunwi
+          .map((r) => r.통합_커버율)
+          .filter((v) => v != null);
+        const medCover = median(covers);
+        const medIntegrated = median(integratedCovers);
+
+        document.getElementById("kpi-cover").textContent =
+          (medCover * 100).toFixed(1) + "%";
+        document.getElementById("kpi-cover-sub").textContent =
+          integratedCovers.length
+            ? `학원 제외 시 중앙값 ${(medIntegrated * 100).toFixed(1)}%`
+            : "";
+
+        let maxGapDong = null,
+          maxGap = -Infinity;
+        nonGunwi.forEach((r) => {
+          if (r.전체_커버율 != null && r.통합_커버율 != null) {
+            const gap = r.전체_커버율 - r.통합_커버율;
+            if (gap > maxGap) {
+              maxGap = gap;
+              maxGapDong = r;
+            }
+          }
+        });
+        const insightEl = document.getElementById("coverageInsight");
+        if (insightEl && maxGapDong) {
+          insightEl.innerHTML =
+            `학원 정원을 포함하면 커버율이 급등하는 지역이 있습니다 — 예: ` +
+            `<b>${maxGapDong.시군구명} ${maxGapDong.읍면동명}</b>은 돌봄시설만 보면 커버율 ` +
+            `${(maxGapDong.통합_커버율 * 100).toFixed(1)}%이지만, 학원까지 더하면 ` +
+            `${(maxGapDong.전체_커버율 * 100).toFixed(1)}%로 뛰어오릅니다. ` +
+            `그래서 위 "커버율" 지표는 평균 대신 극단값에 덜 흔들리는 중앙값을 사용합니다.`;
+        }
+      }
+
+      async function loadEntropy() {
+        const e = await fetchJSON("/api/entropy");
+        const container = document.getElementById("weightBars");
+        container.innerHTML = "";
+        Object.entries(e.weights).forEach(([name, w]) => {
+          const pct = (w * 100).toFixed(1);
+          const row = document.createElement("div");
+          row.className = "weight-bar-row";
+          row.innerHTML = `<div class="name">${name}</div>
+      <div class="weight-bar-track"><div class="weight-bar-fill" style="width:${pct}%"></div></div>
+      <div class="pct">${pct}%</div>`;
+          container.appendChild(row);
+        });
+        const d = e.diagnostics;
+        document.getElementById("entropyDiag").innerHTML =
+          `엔트로피 vs 단순평균 지수 상관: <b>${d.method_correlation_pearson.toFixed(3)}</b> (순위상관 <b>${d.method_correlation_spearman.toFixed(3)}</b>)<br>` +
+          `민감도 분석(가중치 ±20%, 200회): 평균 순위상관 <b>${d.sensitivity_mean_rank_corr.toFixed(3)}</b>, 최소 <b>${d.sensitivity_min_rank_corr.toFixed(3)}</b><br>` +
+          `→ 방법을 바꿔도, 가중치를 흔들어도 취약지역 순위는 안정적입니다. (군위군 ${d.n_gunwi_excluded}개 면은 별도 처리)`;
+      }
+
+      function renderRegModel(m) {
+        const rows = m.coefficients
+          .map((c) => {
+            const sig =
+              c.p_value < 0.01
+                ? "***"
+                : c.p_value < 0.05
+                  ? "**"
+                  : c.p_value < 0.1
+                    ? "*"
+                    : "";
+            return `<tr><td>${c.variable}</td><td>${c.coef.toFixed(4)}</td><td>${c.standardized_coef.toFixed(3)}</td>
+      <td>${c.p_value < 0.001 ? c.p_value.toExponential(2) : c.p_value.toFixed(3)} <span class="sig-star">${sig}</span></td></tr>`;
+          })
+          .join("");
+        return `<div style="margin-bottom:18px;">
+    <b style="font-size:13px;">${m.label}</b>
+    <table class="reg-table">
+      <thead><tr><th>변수</th><th>계수(B)</th><th>표준화(β)</th><th>p-value</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <span class="r2-badge">R² ${m.r_squared.toFixed(3)} · n=${m.n_obs}</span>
+    <div class="caveat">${m.caveat}</div>
+  </div>`;
+      }
+
+      async function loadRegression() {
+        const r = await fetchJSON("/api/regression");
+        document.getElementById("regressionBody").innerHTML =
+          renderRegModel(r.model_a) + renderRegModel(r.model_b);
+      }
+
+      function pct(x) {
+        return (x * 100).toFixed(1) + "%";
+      }
+
+      function renderInsights(d) {
+        const i1 = d.insight_1,
+          i2 = d.insight_2,
+          i3 = d.insight_3;
+
+        const reasonRows = i1.reason_table
+          .map(
+            (r) =>
+              `<tr><td>${r.사유}</td><td>${pct(r.영유아동반이동)}</td><td>${pct(r.전체이동)}</td><td>${r.배율.toFixed(2)}배</td></tr>`,
+          )
+          .join("");
+        const inflowRows = i1.top4_net_inflow
+          .map(
+            (r) =>
+              `<tr><td>${r.구} ${r.동}</td><td class="hot">+${r.순유입_3년.toLocaleString()}명</td></tr>`,
+          )
+          .join("");
+
+        const priorityRows = i2.priority_dongs
+          .map(
+            (r) =>
+              `<tr><td>${r.구} ${r.동}</td><td>${r.인구_0_6세.toLocaleString()}</td><td>${r.정원}</td><td>${r.현원}</td>
+     <td>${pct(r.충원율)}</td><td class="hot">+${r.순유입_3년.toLocaleString()}</td>
+     <td>${pct(r.주택사유비율)}</td><td>${r.아파트연식}년</td></tr>`,
+          )
+          .join("");
+
+        const groupRows = i3.groups
+          .map(
+            (g) =>
+              `<tr><td>${g.갈래}</td><td>${g.동수}개</td><td>${(g.순이동률_3년 * 100).toFixed(1)}%</td>
+     <td>${g.유휴정원.toLocaleString()}석</td><td>${g.아파트연식}년</td><td>${g.처방}</td></tr>`,
+          )
+          .join("");
+
+        document.getElementById("insightsBody").innerHTML = `
+    <div class="insight-card">
+      <div class="eyebrow">인사이트 1</div>
+      <h3>${i1.title}</h3>
+      <table class="insight-table">
+        <thead><tr><th>전입 사유</th><th>영유아 동반 이동</th><th>전체 이동</th><th>배율</th></tr></thead>
+        <tbody>${reasonRows}</tbody>
+      </table>
+      <table class="insight-table">
+        <thead><tr><th>3년 순유입 상위 4개 동</th><th>순유입</th></tr></thead>
+        <tbody>${inflowRows}</tbody>
+      </table>
+      <div class="insight-quote">"${i1.quote}"</div>
+      <div class="insight-note">${i1.note}</div>
+    </div>
+
+    <div class="insight-card">
+      <div class="eyebrow">인사이트 2</div>
+      <h3>${i2.title}</h3>
+      <table class="insight-table">
+        <thead><tr><th>행정동</th><th>0-6세</th><th>정원</th><th>현원</th><th>충원율</th><th>3년 순유입</th><th>주택사유</th><th>연식</th></tr></thead>
+        <tbody>${priorityRows}</tbody>
+      </table>
+      <div class="insight-quote">"${i2.quote}"</div>
+      <div class="insight-note">${i2.note}</div>
+    </div>
+
+    <div class="insight-card">
+      <div class="eyebrow">인사이트 3</div>
+      <h3>${i3.title}</h3>
+      <table class="insight-table">
+        <thead><tr><th>갈래</th><th>동수</th><th>3년 순이동률</th><th>유휴 정원</th><th>아파트 연식</th><th>처방</th></tr></thead>
+        <tbody>${groupRows}</tbody>
+      </table>
+      <div class="insight-quote">"${i3.quote}"</div>
+      ${i3.examples.map((e) => `<div class="insight-note"><b>${e.구} ${e.동}</b> (3년 순이동률 ${(e.순이동률_3년 * 100).toFixed(1)}%${e.아파트연식 ? ", 연식 " + e.아파트연식 + "년" : ""}): ${e.설명}</div>`).join("")}
+    </div>
+
+    <div class="insight-card">
+      <div class="eyebrow">정책 제언</div>
+      <ol class="policy-list">${d.policy_recommendations.map((p) => `<li>${p}</li>`).join("")}</ol>
+      <div class="caveat">${d.caveat}</div>
+      <div class="insight-note" style="margin-top:8px;">출처: ${d.source}</div>
+    </div>
+  `;
+      }
+
+      async function loadInsights() {
+        const d = await fetchJSON("/api/insights");
+        renderInsights(d);
+      }
+
+      async function main() {
+        initTabNavigation();
+        initMap();
+
+        allDong = await fetchJSON("/api/dong");
+        populateGuFilter(allDong);
+        renderMarkers(allDong);
+
+        // 이벤트 바인딩
+        document
+          .getElementById("guFilter")
+          .addEventListener("change", applyFilters);
+        document
+          .getElementById("typeFilter")
+          .addEventListener("change", applyFilters);
+        document
+          .getElementById("btnResetMap")
+          .addEventListener("click", resetMapToOverall);
+        document
+          .getElementById("btnOpenMapWindow")
+          .addEventListener("click", openMapInNewWindow);
+
+        document
+          .querySelectorAll(".quad")
+          .forEach((q) =>
+            q.addEventListener("click", () =>
+              highlightQuadrant(q.dataset.type),
+            ),
+          );
+
+        document
+          .getElementById("kpiBlankBox")
+          .addEventListener("click", toggleBlankDetail);
+
+        await loadSummary();
+        await loadEntropy();
+        await loadRegression();
+        await loadInsights();
+
+        document.getElementById("lastUpdated").textContent =
+          `총 ${allDong.length}개 읍면동 · 2026년 자료 기준`;
+      }
+
+      main();
+    </script>
+  </body>
+</html>
