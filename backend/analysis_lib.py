@@ -15,8 +15,9 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FINAL_CSV = os.path.join(BASE_DIR, "data", "daegu_final_dataset.csv")
 CENTROID_CSV = os.path.join(BASE_DIR, "data", "dong_centroids.csv")
-# 교사 1인당 아동수(교사아동비) 산출용 별도 데이터셋 — 메인 데이터셋과 용도가 달라
-# 따로 관리되지만, 읍면동 기준으로 병합해서 함께 쓴다.
+# 교사 배치 지표 산출용 별도 데이터셋 — 메인 데이터셋과 용도가 달라 따로 관리되지만,
+# 읍면동 기준으로 병합해서 함께 쓴다. cc_teacher(보육교사 수), cc_cap(어린이집 정원)을
+# 원자료로 가져와 load_base_df()에서 '교사1인당정원수'를 직접 계산한다.
 TEACHER_CSV = os.path.join(BASE_DIR, "data", "daegu_final_dataset_m1.csv")
 
 INDEX_INDICATORS = ["전체_커버율", "체육밀도"]
@@ -31,10 +32,30 @@ def load_base_df() -> pd.DataFrame:
         lambda r: (r["체육시설수"] / r["유아인구_3_6세"] * 1000) if r["유아인구_3_6세"] > 0 else 0,
         axis=1,
     )
-    # 교사아동비는 메인 데이터셋에 없고 별도 파일(m1)에만 있어, 읍면동 기준 병합해서 채워 넣는다.
-    if "교사아동비" not in df.columns and os.path.exists(TEACHER_CSV):
-        teacher = pd.read_csv(TEACHER_CSV)[["시군구명", "읍면동명", "교사아동비"]]
+    # ------------------------------------------------------------------
+    # 교사 지표: m1 데이터셋의 원자료(cc_teacher, cc_cap)로 "교사 1인당 정원 수"를
+    # 직접 계산한다. CSV에 들어 있는 기존 '교사아동비'(= 교사수 / 현원) 열은 쓰지 않는다.
+    #
+    # [왜 바꾸는가]
+    #   기존 교사아동비는 분모가 '현원'인데, 종속변수 충원율(현원/정원)의 분자도 '현원'이다.
+    #   같은 값이 한쪽은 분모, 한쪽은 분자로 들어가 있어서 아이가 오지 않으면
+    #   충원율이 내려가는 동시에 교사아동비가 자동으로 올라간다.
+    #   즉 교사 배치와 무관하게 정의상 음(-)의 관계가 생기는 구조였다.
+    #   분모를 '정원'으로 바꾸면 이 얽힘이 사라져 계수를 교사 배치 효과로 읽을 수 있다.
+    #
+    # [읽는 방향] 값이 클수록 교사 1명이 맡아야 할 정원이 많다 = 여건이 나쁘다
+    #             -> 충원율과는 음(-)의 관계가 기대된다.
+    # ------------------------------------------------------------------
+    if os.path.exists(TEACHER_CSV):
+        teacher = pd.read_csv(TEACHER_CSV)[["시군구명", "읍면동명", "cc_teacher", "cc_cap"]]
+        df = df.drop(columns=["교사아동비"], errors="ignore")
         df = df.merge(teacher, on=["시군구명", "읍면동명"], how="left")
+        df["교사1인당정원수"] = np.where(
+            (df["cc_teacher"] > 0) & df["cc_cap"].notna(),
+            df["cc_cap"] / df["cc_teacher"],
+            np.nan,
+        )
+        df = df.drop(columns=["cc_teacher", "cc_cap"])
     return df
 
 

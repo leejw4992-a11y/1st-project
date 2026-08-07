@@ -97,7 +97,7 @@ def get_dong(
         "전체_정원", "통합_현원", "전체_커버율", "전체_충원율",
         "인프라지수_엔트로피", "사분면", "미스매치_유형",
         "평균제곱미터당가격_만원", "합계출산율_2025", "고용률",
-        "교사아동비",
+        "교사1인당정원수",
     ]
     cols = [c for c in cols if c in df.columns]
     records = df[cols].to_dict(orient="records")

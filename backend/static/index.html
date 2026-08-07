@@ -1151,7 +1151,7 @@
         <div class="stats-title">대구광역시 평균</div>
         <div class="stats">
           <div>
-            <div class="lb">교사 1인당 아동수</div>
+            <div class="lb">교사 1인당 정원 수</div>
             <div class="vl" id="kpi-teacher">–</div>
           </div>
           <button id="blankBtn" aria-expanded="false">
@@ -2253,7 +2253,7 @@
           r = 70,
           W = 15,
           MIN = 2,
-          MAX = 7;
+          MAX = 13;
         const A = (t) =>
           180 - ((Math.min(MAX, Math.max(MIN, t)) - MIN) / (MAX - MIN)) * 180;
         const seg = (t1, t2, c) =>
@@ -2280,11 +2280,11 @@
             "</text>"
           );
         };
-        const col = val <= 3.5 ? "#1D8A4E" : val <= 5 ? "#C97A0E" : "#C42B2B";
+        const col = val <= 3 ? "#1D8A4E" : val <= 5 ? "#C97A0E" : "#C42B2B";
         return (
           '<svg viewBox="0 0 200 108">' +
-          seg(MIN, 3.5, "#A7D4B8") +
-          seg(3.5, 5, "#F0CE96") +
+          seg(MIN, 3, "#A7D4B8") +
+          seg(3, 5, "#F0CE96") +
           seg(5, MAX, "#E5A29A") +
           '<line x1="' +
           m1x.toFixed(1) +
@@ -2403,13 +2403,13 @@
                 Math.abs(diff).toFixed(1) +
                 "% 낮음</div>";
         return (
-          '<div class="gp-card" id="gpTeacherCard"><div class="cap">교사 1인당 아동수 · ' +
+          '<div class="gp-card" id="gpTeacherCard"><div class="cap">교사 1인당 정원 수 · ' +
           scopeLabel +
           "</div>" +
           '<div class="gp-dial">' +
           dialSVG(teacherVal == null ? daeguAvg.teacher : teacherVal) +
           "</div>" +
-          '<div class="cap" style="margin:4px 0 0">양호 ≤3.5 · 주의 ≤5.0 · 위험 >5.0 — 검은 눈금은 대구 평균 ' +
+          '<div class="cap" style="margin:4px 0 0">양호 ≤3 · 주의 ≤5 · 위험 >5 (법정 배치기준 0세 1:3 · 1세 1:5) — 검은 눈금은 대구 평균 ' +
           daeguAvg.teacher.toFixed(1) +
           "명</div></div>" +
           '<div class="gp-card" id="gpFillCard"><div class="cap">평균 충원율 · ' +
@@ -2478,7 +2478,9 @@
           .join("");
 
         const teacherVals = rows
-          .map((r) => (r["교사아동비"] ? 1 / r["교사아동비"] : null))
+          .map((r) =>
+            r["교사1인당정원수"] != null ? r["교사1인당정원수"] : null,
+          )
           .filter((v) => v != null);
         const teacherAvg = teacherVals.length
           ? teacherVals.reduce((a, b) => a + b, 0) / teacherVals.length
@@ -2678,7 +2680,8 @@
         curDong = curDong === name ? null : name;
         buildPanel(curGu);
         if (curDong) {
-          const teacherVal = r["교사아동비"] ? 1 / r["교사아동비"] : null;
+          const teacherVal =
+            r["교사1인당정원수"] != null ? r["교사1인당정원수"] : null;
           const fillVal =
             r["전체_충원율"] != null ? r["전체_충원율"] * 100 : null;
           const grid = document.querySelector(".gp-grid");
@@ -2949,7 +2952,7 @@
               체육시설수: Math.round(rnd() * 8),
               전체_커버율: 0.3 + rnd() * 1.5,
               전체_충원율: 0.35 + rnd() * 0.6,
-              교사아동비: 0.15 + rnd() * 0.3,
+              교사1인당정원수: 2 + rnd() * 6,
               미스매치_유형: t,
             });
           }
@@ -2993,10 +2996,10 @@
         const fillAvgFrac =
           f.reduce((a, r) => a + r["전체_충원율"], 0) / f.length;
         $("kpi-fill").textContent = pct(fillAvgFrac);
-        const t2 = allDong.filter((r) => r["교사아동비"]);
+        const t2 = allDong.filter((r) => r["교사1인당정원수"] != null);
         const teacherAvg = t2.length
-          ? t2.reduce((a, r) => a + 1 / r["교사아동비"], 0) / t2.length
-          : 5.3;
+          ? t2.reduce((a, r) => a + r["교사1인당정원수"], 0) / t2.length
+          : 4.4;
         $("kpi-teacher").textContent = t2.length
           ? teacherAvg.toFixed(1) + "명"
           : "-";
