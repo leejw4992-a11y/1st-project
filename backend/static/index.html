@@ -153,12 +153,17 @@
         text-orientation: upright;
         letter-spacing: 1px;
       }
+      .ax.v b {
+        font-weight: 700;
+        margin-top: 3px;
+        display: inline-block;
+      }
 
       .q {
         border: 0;
         background: var(--card);
         border-radius: 9px;
-        padding: 9px 10px;
+        padding: 18px 14px;
         text-align: center;
         cursor: pointer;
         font: inherit;
@@ -166,7 +171,8 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 3px;
+        justify-content: center;
+        gap: 6px;
         transition: 0.15s;
       }
       .q:hover {
@@ -179,7 +185,7 @@
       }
       .q .n {
         font-family: var(--mono);
-        font-size: 20px;
+        font-size: 28px;
         font-weight: 700;
         line-height: 1;
         letter-spacing: -1px;
@@ -191,7 +197,7 @@
         color: rgba(255, 255, 255, 0.75);
       }
       .q .nm {
-        font-size: 12.5px;
+        font-size: 16px;
         font-weight: 700;
       }
       .q .ds {
@@ -303,6 +309,32 @@
         color: var(--sub);
         line-height: 1.5;
       }
+      .type-sum {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 10px;
+        padding: 5px 0;
+        border-bottom: 1px solid var(--rule);
+        font-size: 11.5px;
+      }
+      .type-sum:last-child {
+        border-bottom: none;
+      }
+      .type-sum b {
+        flex: none;
+        color: var(--ink);
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .type-sum span {
+        text-align: right;
+        color: var(--sub);
+      }
+      .type-sum.on b,
+      .type-sum.on span {
+        color: var(--signal);
+      }
       .bi {
         display: flex;
         justify-content: space-between;
@@ -393,7 +425,7 @@
         align-items: center;
       }
       .chk {
-        font-size: 22px;
+        font-size: 15px;
         color: var(--sub);
         display: inline-flex;
         align-items: center;
@@ -404,8 +436,8 @@
         color: rgba(255, 255, 255, 0.82);
       }
       .bar .chk input {
-        width: 22px;
-        height: 22px;
+        width: 15px;
+        height: 15px;
       }
       select {
         border: 1px solid var(--rule);
@@ -413,7 +445,7 @@
         border-radius: 8px;
         padding: 5px 10px;
         font: inherit;
-        font-size: 22px;
+        font-size: 15px;
         color: var(--ink-2);
         cursor: pointer;
       }
@@ -459,22 +491,34 @@
         flex: none;
         gap: 8px;
       }
+      .stats-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 8px;
+      }
       .panel-stats .stats > * {
         box-shadow: 0 6px 18px rgba(22, 32, 42, 0.1);
         flex: 1 1 0;
         min-width: 0;
         width: 0;
         padding: 8px 8px;
+        text-align: center;
       }
       .panel-stats .lb {
-        font-size: 10px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: clip;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--ink);
+        white-space: normal;
+        line-height: 1.25;
+        text-align: center;
       }
       .panel-stats .vl {
-        font-size: 18px;
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--ink);
         white-space: nowrap;
+        text-align: center;
       }
       .chart-sec {
         margin-top: 14px;
@@ -496,7 +540,7 @@
         min-height: 0;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        gap: 8px;
       }
       .bar-row {
         display: flex;
@@ -851,7 +895,7 @@
       }
       .gp-dstats > div {
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         gap: 10px;
         padding: 5px 0;
         white-space: nowrap;
@@ -861,9 +905,10 @@
       }
       .gp-delta {
         margin-top: 7px;
-        font-size: 15px;
+        font-size: 18px;
         font-weight: 800;
         line-height: 1.3;
+        text-align: center;
         white-space: normal !important;
       }
       .gp-delta.pos {
@@ -933,8 +978,66 @@
           max-width: none;
           margin: 12px 16px 0;
         }
+        .panel-matrix,
+        .panel-stats {
+          max-height: none;
+          height: auto;
+          overflow: visible;
+          width: auto;
+        }
         .stage {
           min-height: 460px;
+        }
+      }
+
+      /* ── 모바일(좁은 화면): 헤더를 세로로 쌓고, 글자 크기를 줄인다 ── */
+      @media (max-width: 700px) {
+        .bar {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 10px;
+          padding: 14px 16px;
+        }
+        .bar h1 {
+          font-size: 20px;
+        }
+        .bar .src {
+          font-size: 12.5px;
+        }
+        .tools {
+          width: 100%;
+          flex-wrap: wrap;
+        }
+        .chk {
+          white-space: nowrap;
+        }
+        .mx {
+          grid-template-columns: 30px 1fr 1fr;
+        }
+        .q .n {
+          font-size: 20px;
+        }
+        .q .nm {
+          font-size: 13px;
+        }
+        .stats {
+          flex-wrap: wrap;
+        }
+        .panel-stats {
+          right: auto;
+          width: auto !important;
+        }
+        .gp-grid {
+          grid-template-columns: 1fr;
+          grid-template-rows: none;
+          gap: 14px;
+        }
+        .gp-card {
+          min-height: 220px;
+        }
+        .gp-card.wide {
+          grid-column: auto;
+          min-height: 320px;
         }
       }
       @media (prefers-reduced-motion: reduce) {
@@ -988,28 +1091,24 @@
           <div class="ax">커버율 높음</div>
           <div class="ax">커버율 낮음</div>
 
-          <div class="ax v">충원율 높음</div>
+          <div class="ax v">충원율<b>높음</b></div>
           <button class="q good" data-type="양호" aria-pressed="false">
             <span class="n" id="cnt-양호">–<small>곳</small></span>
             <span class="nm">양호</span>
-            <span class="ds">자리도 넉넉하고 잘 이용합니다</span>
           </button>
           <button class="q phys" data-type="물리적부족" aria-pressed="false">
             <span class="n" id="cnt-물리적부족">–<small>곳</small></span>
             <span class="nm">수요초과형</span>
-            <span class="ds">자리가 모자라 이미 꽉 찼습니다</span>
           </button>
 
-          <div class="ax v">충원율 낮음</div>
+          <div class="ax v">충원율<b>낮음</b></div>
           <button class="q qual" data-type="질적미스매치" aria-pressed="false">
             <span class="n" id="cnt-질적미스매치">–<small>곳</small></span>
             <span class="nm">공급초과형</span>
-            <span class="ds">자리는 있는데 아이가 가지 않습니다</span>
           </button>
           <button class="q dbl" data-type="이중취약" aria-pressed="false">
             <span class="n" id="cnt-이중취약">–<small>곳</small></span>
             <span class="nm">이중 취약</span>
-            <span class="ds">자리도 적고 이용도 저조합니다</span>
           </button>
         </div>
 
@@ -1039,9 +1138,9 @@
             <h3 id="drillTitle">시설이 한 곳도 없는 지역</h3>
             <button class="closebtn" id="drillClose">닫기</button>
           </div>
-          <p class="cap" id="drillCap">
+          <div class="cap" id="drillCap">
             숫자만으로는 모두 같은 “공백”이지만, 배경은 서로 다릅니다.
-          </p>
+          </div>
           <div id="drillDonut"></div>
           <div id="blankList"></div>
         </div>
@@ -1049,6 +1148,7 @@
 
       <!-- 우측 상단 오버레이: 통계 -->
       <div class="panel panel-stats">
+        <div class="stats-title">대구광역시 평균</div>
         <div class="stats">
           <div>
             <div class="lb">교사 1인당 아동수</div>
@@ -2296,12 +2396,12 @@
           fillVal == null
             ? ""
             : diff >= 0
-              ? '<div class="gp-delta pos">대구 평균보다 ' +
+              ? '<div class="gp-delta pos">대구 평균보다<br>' +
                 diff.toFixed(1) +
-                "%p 높음</div>"
-              : '<div class="gp-delta neg">대구 평균보다 ' +
+                "% 높음</div>"
+              : '<div class="gp-delta neg">대구 평균보다<br>' +
                 Math.abs(diff).toFixed(1) +
-                "%p 낮음</div>";
+                "% 낮음</div>";
         return (
           '<div class="gp-card" id="gpTeacherCard"><div class="cap">교사 1인당 아동수 · ' +
           scopeLabel +
@@ -2725,6 +2825,14 @@
         el.innerHTML = svg + legend;
       }
 
+      const TYPE_DESC = {
+        물리적부족: "자리가 모자란데 이미 꽉 찼습니다.",
+        양호: "자리도 넉넉하고 잘 이용하고 있습니다.",
+        질적미스매치: "자리는 많은데 아이가 가지 않습니다.",
+        이중취약: "자리도 적고 이용도 저조합니다.",
+      };
+      const MATRIX_ORDER = ["물리적부족", "양호", "질적미스매치", "이중취약"];
+
       /* ── 유형별(시설없음/양호/수요초과형/공급초과형/이중취약) 동 목록 ── */
       function openDrill(type) {
         type = type || "완전공백";
@@ -2739,10 +2847,12 @@
           type === "완전공백"
             ? "시설이 한 곳도 없는 지역"
             : (LABEL[type] || type) + " " + rows.length + "곳";
-        $("drillCap").textContent =
-          type === "완전공백"
-            ? "숫자만으로는 모두 같은 \u201c공백\u201d이지만, 배경은 서로 다릅니다."
-            : "구·군마다 영유아 인구가 가장 많은 동 1곳입니다.";
+        if (type === "완전공백") {
+          $("drillCap").textContent =
+            "숫자만으로는 모두 같은 \u201c공백\u201d이지만, 배경은 서로 다릅니다.";
+        } else {
+          $("drillCap").textContent = TYPE_DESC[type] || "";
+        }
         renderDrillDonut(rows);
 
         // 구·군별로 영유아 인구가 가장 많은 동 1곳만 뽑아 보여준다
